@@ -94,7 +94,7 @@ SimulateData <- function(M=10, p0=0.5, NbGen=15, NbRep=10)
 #==============================================================================
 # PlotFreq
 #==============================================================================
-PlotFreq <- function(DATA)
+PlotFreq <- function(DATA, FixationFlag=FALSE)
 {
 #------------------------------------------------------------------------------
 	MAT   <- DATA$MAT
@@ -115,9 +115,38 @@ PlotFreq <- function(DATA)
 #------------------------------------------------------------------------------
 	Color <- rainbow(NbRep)
 	ValX <- 0:NbGen
+	FixA <- MAT[, NbGen+1] == 1
+	FixB <- MAT[, NbGen+1] == 0
+	Poly <- ! (FixA | FixB) 
 	for (i in 1:NbRep) {
 		ValY <- MAT[i, ]
-		lines(ValX, ValY, col=Color[i])
+		if (FixationFlag) {
+			Pos <- which((ValY != 0) & (ValY != 1))
+			Pos0 <- which(ValY == 0)
+			Pos1 <- which(ValY == 1)
+			if (length(Pos0) > 1) {
+				Pos0 <- Pos0[1]
+				Pos <- c(Pos, Pos0)
+				lines(ValX[Pos], ValY[Pos], col="blue")
+				points(ValX[Pos0], ValY[Pos0], pch=20, col="blue")
+			} else {
+				if (length(Pos1) > 1) {
+					Pos1 <- Pos1[1]
+					Pos <- c(Pos, Pos1)
+					lines(ValX[Pos], ValY[Pos], col="red")
+					points(ValX[Pos1], ValY[Pos1], pch=20, col="red")
+				} else {
+					lines(ValX, ValY, col="black")
+				}
+			}
+		} else {
+			lines(ValX, ValY, col=Color[i])
+		}
+	}
+	if (FixationFlag) {
+		axis(4, at=c(0.0), label=sum(FixB), las=2, lwd=0, col.axis="blue")
+		axis(4, at=c(0.5), label=sum(Poly), las=2, lwd=0, col.axis="black")
+		axis(4, at=c(1.0), label=sum(FixA), las=2, lwd=0, col.axis="red")
 	}
 #------------------------------------------------------------------------------
 	par(ParBak)
@@ -176,7 +205,7 @@ PlotFreqDensity <- function(DATA)
 #==============================================================================
 # PlotMeanP
 #==============================================================================
-PlotMeanP <- function(DATA)
+PlotMeanP <- function(DATA, ExpectedFlag)
 {
 #------------------------------------------------------------------------------
 	p0    <- DATA$p0
@@ -194,12 +223,13 @@ PlotMeanP <- function(DATA)
 #------------------------------------------------------------------------------
 	plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", ylab="Mean of P", bty="n")
 #------------------------------------------------------------------------------
-	axis(4, at=c(p0), label=c("p0"), las=2, lwd=0)
+	if (ExpectedFlag) {
+		axis(4, at=c(p0), label=c("p0"), las=2, lwd=0)
+		abline(h=p0, lty=2, col="red")
+	}
 #------------------------------------------------------------------------------
 	abline(h=0, col="grey")
 	abline(h=1, col="grey")
-#------------------------------------------------------------------------------
-	abline(h=p0, lty=2, col="red")
 #------------------------------------------------------------------------------
 	ValX <- 0:NbGen
 	ValY <- MeanP
@@ -215,7 +245,7 @@ PlotMeanP <- function(DATA)
 #==============================================================================
 # PlotVarianceP
 #==============================================================================
-PlotVarianceP <- function(DATA)
+PlotVarianceP <- function(DATA, ExpectedFlag)
 {
 #------------------------------------------------------------------------------
 	M     <- DATA$M
@@ -240,21 +270,23 @@ PlotVarianceP <- function(DATA)
 #------------------------------------------------------------------------------
 	plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", ylab="Variance of P", bty="n")
 #------------------------------------------------------------------------------
-	axis(4, at=c(p0*(1-p0)), label=c("p0(1-p0)"), las=2, lwd=0)
+	if (ExpectedFlag) {
+		axis(4, at=c(p0*(1-p0)), label=c("p0(1-p0)"), las=2, lwd=0)
+		abline(h=p0*(1-p0), col="grey")
+		ValX <- 0:NbGen
+		ValY <- p0*(1-p0)*(1-(1-1/M)^ValX)
+		lines(ValX, ValY, lty=2, col="red")
+	}
 #------------------------------------------------------------------------------
 	abline(h=0, col="grey")
-	abline(h=p0*(1-p0), col="grey")
 #------------------------------------------------------------------------------
-	ValX <- 0:NbGen
-	ValY <- p0*(1-p0)*(1-(1-1/M)^ValX)
-	lines(ValX, ValY, lty=2, col="red")
 #------------------------------------------------------------------------------
 	if (NbRep > 1) {
 		ValX <- 0:NbGen
 		ValY <- VarP
 		lines(ValX, ValY)
 	} else {
-		text(mean(BoxX), mean(BoxY), "NOT AVAILABLE")
+		text(mean(BoxX), mean(BoxY), "NOT AVAILABLE", col="red")
 	}
 #------------------------------------------------------------------------------
 	par(ParBak)
@@ -267,7 +299,7 @@ PlotVarianceP <- function(DATA)
 #==============================================================================
 # PlotFixationProbability
 #==============================================================================
-PlotFixationProbability <- function(DATA)
+PlotFixationProbability <- function(DATA, ExpectedFlag)
 {
 #------------------------------------------------------------------------------
 	p0     <- DATA$p0
@@ -288,12 +320,14 @@ PlotFixationProbability <- function(DATA)
 #------------------------------------------------------------------------------
 	plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", ylab="Proportion", bty="n")
 #------------------------------------------------------------------------------
-	axis(4, at=c(p0, 1-p0), label=c("p0", "1-p0"), las=2, lwd=0)
+	if (ExpectedFlag) {
+		abline(h=p0, lty=2, col="red")
+		abline(h=1-p0, lty=2, col="blue")
+		axis(4, at=c(p0, 1-p0), label=c("p0", "1-p0"), las=2, lwd=0)
+	}
 #------------------------------------------------------------------------------
 	abline(h=0, col="grey")
 	abline(h=1, col="grey")
-	abline(h=p0, lty=2, col="red")
-	abline(h=1-p0, lty=2, col="blue")
 #------------------------------------------------------------------------------
 	ValX <- 0:NbGen
 	ValY <- NbFixA/NbRep

@@ -29,14 +29,14 @@ shinyServer(
 
 #------------------------------------------------------------------------------
 		DATA <- eventReactive(input$go, {
-			SimulateData(input$M, input$p0, input$NbGen, input$NbRep)
+			SimulateData(input$M, input$p0, input$NbGen, input$NbRepA*input$NbRepB)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFreq <- renderPlot({
-			PLOT <- PlotFreq(DATA())
+			PLOT <- PlotFreq(DATA(), input$FixationFlag)
 		})
 #------------------------------------------------------------------------------
 
@@ -50,21 +50,21 @@ shinyServer(
 
 #------------------------------------------------------------------------------
 		output$driftPlotMeanP <- renderPlot({
-			PLOT <- PlotMeanP(DATA())
+			PLOT <- PlotMeanP(DATA(), input$ExpectedFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotVarianceP <- renderPlot({
-			PLOT <- PlotVarianceP(DATA())
+			PLOT <- PlotVarianceP(DATA(), input$ExpectedFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFixationProbability <- renderPlot({
-			PLOT <- PlotFixationProbability(DATA())
+			PLOT <- PlotFixationProbability(DATA(), input$ExpectedFlag)
 		})
 #------------------------------------------------------------------------------
 

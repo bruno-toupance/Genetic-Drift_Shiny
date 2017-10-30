@@ -36,11 +36,18 @@ shinyUI(
 # Sidebar with input
 #------------------------------------------------------------------------------
 		sidebarPanel(
-			sliderInput('M',       'Number of gene copies M:', min=10, max=200, value=50, step=5)
-			, sliderInput('p0',    'Initial frequency p0 of allele A:', min=0.05, max=0.95, value=0.2, step=0.05)
-			, sliderInput('NbGen', 'Number of generations:', min=10, max=1000, value=100, step=10)
-			, sliderInput('NbRep', 'Number of repetitions:', min=10, max=10000, value=10, step=10)
-			, actionButton('go',   'New Simulation', icon("random"))
+			wellPanel(
+				sliderInput('M',       'Number of gene copies M:', min=10, max=200, value=50, step=5)
+				, sliderInput('p0',    'Initial frequency p0 of allele A:', min=0.05, max=0.95, value=0.2, step=0.05)
+				, sliderInput('NbGen', 'Number of generations:', min=10, max=1000, value=100, step=10)
+				, actionButton('go',   'New Simulation', icon("random"))
+			)
+			, wellPanel(
+				sliderInput('NbRepA', 'Number of repetitions A:', min=1, max=1000, value=1, step=1)
+				, sliderInput('NbRepB', 'Number of repetitions B:', min=1, max=100, value=10, step=1)
+				, checkboxInput('FixationFlag',  'Show fixation', FALSE)
+				, checkboxInput('ExpectedFlag',  'Show expected', FALSE)
+			)
 		),
 
 
