@@ -1,6 +1,6 @@
 #==============================================================================
 #    ui.R : Genetic Drift Simulator User-Interface
-#    Copyright (C) 2017  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2019  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -37,16 +37,17 @@ shinyUI(
 #------------------------------------------------------------------------------
 		sidebarPanel(
 			wellPanel(
-				sliderInput('M',       'Number of gene copies M:', min=10, max=200, value=50, step=5)
-				, sliderInput('p0',    'Initial frequency p0 of allele A:', min=0.05, max=0.95, value=0.2, step=0.05)
-				, sliderInput('NbGen', 'Number of generations:', min=10, max=1000, value=100, step=10)
-				, actionButton('go',   'New Simulation', icon("random"))
+				  checkboxInput(inputId='DipFlag',      label='Diploid', TRUE)
+				, numericInput(inputId='N',             label='Population size - integer:', value=50)
+				, numericInput(inputId='NbGen',         label='Number of generations - integer:', value=100)
+				, numericInput(inputId='p0',            label='Initial frequency p(0) of allele A - numeric [0, 1]:', value=0.2)
+				, numericInput(inputId='NbRep',         label='Number of repetitions - integer:', value=20)
+				, actionButton(inputId='go',            label='New Simulation', icon("random"))
+				# , actionButton(inputId='x2',            label='x2')
 			)
 			, wellPanel(
-				sliderInput('NbRepA', 'Number of repetitions A:', min=1, max=1000, value=1, step=1)
-				, sliderInput('NbRepB', 'Number of repetitions B:', min=1, max=100, value=10, step=1)
-				, checkboxInput('FixationFlag',  'Show fixation', FALSE)
-				, checkboxInput('ExpectedFlag',  'Show expected', FALSE)
+				  checkboxInput(inputId='FixFlag',  label='Show fixation', FALSE)
+				, checkboxInput(inputId='ExpFlag',  label='Show expected', FALSE)
 			)
 		),
 
@@ -56,13 +57,13 @@ shinyUI(
 #------------------------------------------------------------------------------
 		mainPanel(
 			tabsetPanel(
-				type="tabs"
-				, tabPanel("Plot",                 plotOutput("driftPlotFreq", height = "600px"))
-				, tabPanel("Plot Density",         plotOutput("driftPlotFreqDensity", height = "600px"))
-				, tabPanel("Mean of P",            plotOutput("driftPlotMeanP", height = "600px"))
-				, tabPanel("Variance of P",        plotOutput("driftPlotVarianceP", height = "600px"))
-				, tabPanel("Fixation Probability", plotOutput("driftPlotFixationProbability", height = "600px"))
-				, tabPanel("Fixation Time",        plotOutput("driftPlotFixationTime", height = "600px"))
+				  type="tabs"
+				, tabPanel(title="Plot",                 plotOutput(outputId="driftPlotFreq",                height = "600px"))
+				, tabPanel(title="Plot Density",         plotOutput(outputId="driftPlotFreqDensity",         height = "600px"))
+				, tabPanel(title="Mean of P",            plotOutput(outputId="driftPlotMeanP",               height = "600px"))
+				, tabPanel(title="Variance of P",        plotOutput(outputId="driftPlotVarianceP",           height = "600px"))
+				, tabPanel(title="Fixation Probability", plotOutput(outputId="driftPlotFixationProbability", height = "600px"))
+				, tabPanel(title="Fixation Time",        plotOutput(outputId="driftPlotFixationTime",        height = "600px"))
 			)
 		)
 #------------------------------------------------------------------------------

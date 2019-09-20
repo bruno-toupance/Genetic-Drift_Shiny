@@ -1,6 +1,6 @@
 #==============================================================================
 #    server.R : Genetic Drift Simulator Server
-#    Copyright (C) 2017  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2019  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,50 +28,56 @@ shinyServer(
 	function(input, output) {
 
 #------------------------------------------------------------------------------
-		DATA <- eventReactive(input$go, {
-			SimulateData(input$M, input$p0, input$NbGen, input$NbRepA*input$NbRepB)
+		DriftData <- reactive({
+			Tmp <- input$go
+			return(SimulateData(
+				N=input$N, 
+				p0=input$p0, 
+				NbGen=input$NbGen, 
+				NbRep=input$NbRep,
+				DipFlag=input$DipFlag))
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFreq <- renderPlot({
-			PLOT <- PlotFreq(DATA(), input$FixationFlag)
+			Plot <- PlotFreq(DriftData(), input$FixFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFreqDensity <- renderPlot({
-			PLOT <- PlotFreqDensity(DATA())
+			Plot <- PlotFreqDensity(DriftData())
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotMeanP <- renderPlot({
-			PLOT <- PlotMeanP(DATA(), input$ExpectedFlag)
+			Plot <- PlotMeanP(DriftData(), input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotVarianceP <- renderPlot({
-			PLOT <- PlotVarianceP(DATA(), input$ExpectedFlag)
+			Plot <- PlotVarianceP(DriftData(), input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFixationProbability <- renderPlot({
-			PLOT <- PlotFixationProbability(DATA(), input$ExpectedFlag)
+			Plot <- PlotFixationProbability(DriftData(), input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFixationTime <- renderPlot({
-			PLOT <- PlotFixationTime(DATA())
+			PLOT <- PlotFixationTime(DriftData())
 		})
 #------------------------------------------------------------------------------
 
