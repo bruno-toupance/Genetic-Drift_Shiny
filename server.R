@@ -25,7 +25,7 @@ source("Genetic-Drift.R")
 # shinyServer
 #==============================================================================
 shinyServer(
-	function(input, output) {
+	function(input, output, session) {
 
 #------------------------------------------------------------------------------
 		DriftData <- reactive({
@@ -41,8 +41,21 @@ shinyServer(
 
 
 #------------------------------------------------------------------------------
+		observeEvent(input$mul2, {
+			updateNumericInput(session, "N", value=input$N*2)
+			updateNumericInput(session, "NbGen", value=input$NbGen*2)
+		})
+#------------------------------------------------------------------------------
+		observeEvent(input$div2, {
+			updateNumericInput(session, "N", value=input$N %/% 2)
+			updateNumericInput(session, "NbGen", value=input$NbGen %/% 2)
+		})
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 		output$driftPlotFreq <- renderPlot({
-			Plot <- PlotFreq(DriftData(), input$FixFlag)
+			Plot <- PlotFreq(DriftData(), FixFlag=input$FixFlag)
 		})
 #------------------------------------------------------------------------------
 
@@ -56,28 +69,28 @@ shinyServer(
 
 #------------------------------------------------------------------------------
 		output$driftPlotMeanP <- renderPlot({
-			Plot <- PlotMeanP(DriftData(), input$ExpFlag)
+			Plot <- PlotMeanP(DriftData(), ExpFlag=input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotVarianceP <- renderPlot({
-			Plot <- PlotVarianceP(DriftData(), input$ExpFlag)
+			Plot <- PlotVarianceP(DriftData(), ExpFlag=input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFixationProbability <- renderPlot({
-			Plot <- PlotFixationProbability(DriftData(), input$ExpFlag)
+			Plot <- PlotFixationProbability(DriftData(), ExpFlag=input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFixationTime <- renderPlot({
-			PLOT <- PlotFixationTime(DriftData())
+			Plot <- PlotFixationTime(DriftData(), ExpFlag=input$ExpFlag)
 		})
 #------------------------------------------------------------------------------
 

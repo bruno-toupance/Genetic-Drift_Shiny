@@ -39,11 +39,16 @@ shinyUI(
 			wellPanel(
 				  checkboxInput(inputId='DipFlag',      label='Diploid', TRUE)
 				, numericInput(inputId='N',             label='Population size - integer:', value=50)
+				# , numericInput(inputId='N',             label='Population size - integer:', value=16)
 				, numericInput(inputId='NbGen',         label='Number of generations - integer:', value=100)
+				# , numericInput(inputId='NbGen',         label='Number of generations - integer:', value=20)
 				, numericInput(inputId='p0',            label='Initial frequency p(0) of allele A - numeric [0, 1]:', value=0.2)
-				, numericInput(inputId='NbRep',         label='Number of repetitions - integer:', value=20)
+				# , numericInput(inputId='p0',            label='Initial frequency p(0) of allele A - numeric [0, 1]:', value=0.5, min=0, max=1, step=0.1)
+				, numericInput(inputId='NbRep',         label='Number of repetitions - integer:', value=1)
+				# , numericInput(inputId='NbRep',         label='Number of repetitions - integer:', value=105)
 				, actionButton(inputId='go',            label='New Simulation', icon("random"))
-				# , actionButton(inputId='x2',            label='x2')
+				, actionButton(inputId='mul2',            label='x 2')
+				, actionButton(inputId='div2',            label='x 1/2')
 			)
 			, wellPanel(
 				  checkboxInput(inputId='FixFlag',  label='Show fixation', FALSE)
