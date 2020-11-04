@@ -1,6 +1,6 @@
 #==============================================================================
 #    server.R : Genetic Drift Simulator Server
-#    Copyright (C) 2019  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2020  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ shinyServer(
 
 #------------------------------------------------------------------------------
 		output$driftPlotFreqDensity <- renderPlot({
-			Plot <- PlotFreqDensity(DriftData())
+			Plot <- PlotFreqDensity(DriftData(), CntFlag=input$CntFlag)
 		})
 #------------------------------------------------------------------------------
 

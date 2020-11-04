@@ -1,6 +1,6 @@
 #==============================================================================
 #    ui.R : Genetic Drift Simulator User-Interface
-#    Copyright (C) 2019  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2020  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ shinyUI(
 			, wellPanel(
 				  checkboxInput(inputId='FixFlag',  label='Show fixation', FALSE)
 				, checkboxInput(inputId='ExpFlag',  label='Show expected', FALSE)
+				, checkboxInput(inputId='CntFlag',  label='Show count', FALSE)
 			)
 		),
 

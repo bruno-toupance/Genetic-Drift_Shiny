@@ -1,6 +1,6 @@
 #==============================================================================
 #    Genetic-Drift.R : Genetic Drift Simulator
-#    Copyright (C) 2019  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2020  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -272,9 +272,11 @@ PlotFreq <- function(SimData, FixFlag=FALSE)
 				cex.axis=0.7)
 			if (sum(SimData$TimeFA) > 0) {
 				rug(SimData$TimeFA, side=3, col=Color_FA)
+				rug(mean(SimData$TimeFA), side=3, col="black", lwd=2)
 			}
 			if (sum(SimData$TimeLA) > 0) {
 				rug(SimData$TimeLA, side=1, col=Color_LA)
+				rug(mean(SimData$TimeLA), side=1, col="black", lwd=2)
 			}
 		}
 
@@ -293,7 +295,7 @@ PlotFreq <- function(SimData, FixFlag=FALSE)
 #==============================================================================
 # PlotFreqDensity
 #==============================================================================
-PlotFreqDensity <- function(SimData) 
+PlotFreqDensity <- function(SimData, CntFlag=FALSE) 
 {
 #------------------------------------------------------------------------------
 	if (SimData$Param$Flag) {
@@ -326,6 +328,9 @@ PlotFreqDensity <- function(SimData)
 				x2 <- t+0.5
 				y2 <- n+0.5
 				rect(x1, y1, x2, y2, col=Color, border=NA)
+				if (CntFlag) {
+					text(t, n, Val)
+				}
 			}
 		}
 
@@ -363,6 +368,8 @@ PlotMeanP <- function(SimData, ExpFlag=FALSE)
 
 		plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", 
 			ylab="Mean of P", bty="n")
+
+		abline(h=seq(from=0, to=1, by=0.1), col="gray", lty=2)
 
 		if (ExpFlag) {
 			axis(4, at=c(p0), label=c("p(0)"), las=2, lwd=0, cex.axis=0.7)
@@ -489,6 +496,8 @@ PlotFixationProbability <- function(SimData, ExpFlag=FALSE)
 		plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", 
 			ylab="Proportion", bty="n")
 
+		abline(h=seq(from=0, to=1, by=0.1), col="gray", lty=2)
+		
 		if (ExpFlag) {
 			abline(h=p0, lty=2, col=Color_FA)
 			abline(h=1-p0, lty=2, col=Color_LA)
@@ -516,6 +525,9 @@ PlotFixationProbability <- function(SimData, ExpFlag=FALSE)
 		ValX <- 0:NbGen
 		ValY <- NbPoly/NbRep
 		lines(ValX, ValY, col="black")
+		
+		legend("topright", legend=c("Polym", "A fixed", "a fixed"), 
+			col=c("black", Color_FA, Color_LA), lty=1, bg="white")
 
 		par(ParBak)
 #------------------------------------------------------------------------------
