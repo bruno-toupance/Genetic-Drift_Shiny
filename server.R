@@ -18,8 +18,11 @@
 
 
 library(shiny)
+library(shinyFiles)
+library(fs)
 
 source("Genetic-Drift.R")
+
 
 #==============================================================================
 # shinyServer
@@ -30,12 +33,14 @@ shinyServer(
 #------------------------------------------------------------------------------
 		DriftData <- reactive({
 			Tmp <- input$go
-			return(SimulateData(
-				N=input$N, 
-				p0=input$p0, 
-				NbGen=input$NbGen, 
-				NbRep=input$NbRep,
-				DipFlag=input$DipFlag))
+			return(
+				SimulateData(N=input$N
+					, p0=input$p0 
+					, NbGen=input$NbGen
+					, NbRep=input$NbRep
+					, DipFlag=input$DipFlag
+					)
+				)
 		})
 #------------------------------------------------------------------------------
 
@@ -51,6 +56,16 @@ shinyServer(
 			updateNumericInput(session, "NbGen", value=input$NbGen %/% 2)
 		})
 #------------------------------------------------------------------------------
+		observe({
+			volumes <- c("Home"=fs::path_home(), "R Installation"=R.home(), getVolumes()())
+			# shinyFileSave(input, id="CntSaveBtn", roots=volumes, session=session)
+			shinyFileSave(input, id="CntSaveBtn", roots=volumes, session=session, restrictions=system.file(package="base"))
+			file_info <- parseSavePath(roots=volumes, selection=input$CntSaveBtn)
+			if (nrow(file_info) > 0) {
+				export_grid(DriftData(), as.character(file_info$datapath))
+			}
+		})
+#------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
@@ -58,42 +73,26 @@ shinyServer(
 			Plot <- PlotFreq(DriftData(), FixFlag=input$FixFlag)
 		})
 #------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
 		output$driftPlotFreqDensity <- renderPlot({
 			Plot <- PlotFreqDensity(DriftData(), CntFlag=input$CntFlag)
 		})
 #------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
 		output$driftPlotMeanP <- renderPlot({
-			Plot <- PlotMeanP(DriftData(), ExpFlag=input$ExpFlag)
+			Plot <- PlotMeanP(DriftData(), ExpMeanFlag=input$ExpMeanFlag)
 		})
-#------------------------------------------------------------------------------
-
-
 #------------------------------------------------------------------------------
 		output$driftPlotVarianceP <- renderPlot({
-			Plot <- PlotVarianceP(DriftData(), ExpFlag=input$ExpFlag)
+			Plot <- PlotVarianceP(DriftData(), ExpVarFlag=input$ExpVarFlag)
 		})
-#------------------------------------------------------------------------------
-
-
 #------------------------------------------------------------------------------
 		output$driftPlotFixationProbability <- renderPlot({
-			Plot <- PlotFixationProbability(DriftData(), ExpFlag=input$ExpFlag)
+			Plot <- PlotFixationProbability(DriftData(), ExpFixFlag=input$ExpFixFlag)
 		})
-#------------------------------------------------------------------------------
-
-
 #------------------------------------------------------------------------------
 		output$driftPlotFixationTime <- renderPlot({
-			Plot <- PlotFixationTime(DriftData(), ExpFlag=input$ExpFlag)
+			Plot <- PlotFixationTime(DriftData(), ExpTimeFlag=input$ExpTimeFlag)
 		})
 #------------------------------------------------------------------------------
-
 
 	}
 )

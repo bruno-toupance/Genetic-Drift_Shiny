@@ -3,7 +3,7 @@
 #    Copyright (C) 2020  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
+#    it under the terms of the GNU General Public License as published by	
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
@@ -20,6 +20,7 @@
 require(ggplot2)
 require(colorspace)
 # require(scales)
+# require(MASS)
 
 
 #==============================================================================
@@ -153,6 +154,9 @@ SimulateData <- function(N=10, p0=0.5, NbGen=15, NbRep=10, DipFlag=TRUE)
 				Gen <- Gen+1
 			}
 		}
+		
+		rownames(CountMat) <- 0:NC
+		colnames(CountMat) <- 0:NbGen
 
 		NbFixA <- apply(FreqMat, 2, function(x) { return(sum(x == 1)) } )
 		NbLosA <- apply(FreqMat, 2, function(x) { return(sum(x == 0)) } )
@@ -174,6 +178,26 @@ SimulateData <- function(N=10, p0=0.5, NbGen=15, NbRep=10, DipFlag=TRUE)
 	}
 #------------------------------------------------------------------------------
 	return(SimData)
+#------------------------------------------------------------------------------
+}
+#==============================================================================
+
+
+
+#==============================================================================
+# export_grid
+#==============================================================================
+export_grid <- function(SimData, File_Path)
+{
+#------------------------------------------------------------------------------
+	if (SimData$Param$Flag) {
+		CountMat <- SimData$CountMat
+		NbGen <- SimData$NbGen
+		NC <- SimData$NC
+		
+		write.table(CountMat, file=File_Path, sep="\t")
+		# write.matrix(CountMat, file=File_Path, sep="\t")  ## 'MASS' package
+	}
 #------------------------------------------------------------------------------
 }
 #==============================================================================
@@ -261,15 +285,24 @@ PlotFreq <- function(SimData, FixFlag=FALSE)
 		points(ValX, ValY, pch=15, col="black", cex=1)
 
 		if (FixFlag) {
-			FixB_Label <- sprintf("Loss=%d", sum(FixB))
-			Poly_Label <- sprintf("Polym=%d", sum(Poly))
-			FixA_Label <- sprintf("Fixed=%d", sum(FixA))
+			# FixB_Label <- sprintf("Loss=%d", sum(FixB))
+			# Poly_Label <- sprintf("Polym=%d", sum(Poly))
+			# FixA_Label <- sprintf("Fixed=%d", sum(FixA))
+			# axis(4, at=c(0.0), label=FixB_Label, las=2, lwd=0, col.axis=Color_LA, 
+				# cex.axis=0.7)
+			# axis(4, at=c(0.5), label=Poly_Label, las=2, lwd=0, col.axis="black", 
+				# cex.axis=0.7)
+			# axis(4, at=c(1.0), label=FixA_Label, las=2, lwd=0, col.axis=Color_FA, 
+				# cex.axis=0.7)
+			FixB_Label <- sprintf("Loss\n%d", sum(FixB))
+			Poly_Label <- sprintf("Polym\n%d", sum(Poly))
+			FixA_Label <- sprintf("Fixed\n%d", sum(FixA))
 			axis(4, at=c(0.0), label=FixB_Label, las=2, lwd=0, col.axis=Color_LA, 
-				cex.axis=0.7)
+				cex.axis=1)
 			axis(4, at=c(0.5), label=Poly_Label, las=2, lwd=0, col.axis="black", 
-				cex.axis=0.7)
+				cex.axis=1)
 			axis(4, at=c(1.0), label=FixA_Label, las=2, lwd=0, col.axis=Color_FA, 
-				cex.axis=0.7)
+				cex.axis=1)
 			if (sum(SimData$TimeFA) > 0) {
 				rug(SimData$TimeFA, side=3, col=Color_FA)
 				rug(mean(SimData$TimeFA), side=3, col="black", lwd=2)
@@ -301,6 +334,7 @@ PlotFreqDensity <- function(SimData, CntFlag=FALSE)
 	if (SimData$Param$Flag) {
 		CountMat <- SimData$CountMat
 		NC       <- SimData$NC
+		p0       <- SimData$p0
 		NbGen    <- SimData$NbGen
 		NbRep    <- SimData$NbRep
 
@@ -317,21 +351,32 @@ PlotFreqDensity <- function(SimData, CntFlag=FALSE)
 		Step <- 1/(NbRep+1)
 		ScaleArray <- (1-(log10(seq(from=Step, to=1, by=Step))/log10(Step))) 
 		ColorArray <- rgb(1, 165/255, 0, alpha=ScaleArray) 
-		for (n in 0:NC) {
-			for (t in 1:NbGen) {
-				i <- n+1
-				j <- t+1
+		for (nb in 0:NC) {
+			for (tt in 1:NbGen) {
+				i <- nb+1
+				j <- tt+1
 				Val <- CountMat[i, j]
 				Color <- ColorArray[Val+1]
-				x1 <- t-0.5
-				y1 <- n-0.5
-				x2 <- t+0.5
-				y2 <- n+0.5
+				x1 <- tt-0.5
+				y1 <- nb-0.5
+				x2 <- tt+0.5
+				y2 <- nb+0.5
 				rect(x1, y1, x2, y2, col=Color, border=NA)
 				if (CntFlag) {
-					text(t, n, Val)
+					text(tt, nb, Val)
 				}
 			}
+		}
+		tt <- 0
+		nb <- NC*p0
+		x1 <- tt-0.5
+		y1 <- nb-0.5
+		x2 <- tt+0.5
+		y2 <- nb+0.5
+		rect(x1, y1, x2, y2, col="gray", border=NA)
+		Val <- NbRep
+		if (CntFlag) {
+			text(tt, nb, Val)
 		}
 
 		par(ParBak)
@@ -349,7 +394,7 @@ PlotFreqDensity <- function(SimData, CntFlag=FALSE)
 #==============================================================================
 # PlotMeanP
 #==============================================================================
-PlotMeanP <- function(SimData, ExpFlag=FALSE) 
+PlotMeanP <- function(SimData, ExpMeanFlag=FALSE) 
 {
 #------------------------------------------------------------------------------
 	if (SimData$Param$Flag) {
@@ -371,10 +416,10 @@ PlotMeanP <- function(SimData, ExpFlag=FALSE)
 
 		abline(h=seq(from=0, to=1, by=0.1), col="gray", lty=2)
 
-		if (ExpFlag) {
-			axis(4, at=c(p0), label=c("p(0)"), las=2, lwd=0, cex.axis=0.7)
-			# axis(4, at=p0, label=expression(p[0]), las=2, lwd=0)
-			abline(h=p0, lty=2, col="red")
+		if (ExpMeanFlag) {
+			# axis(4, at=c(p0), label=c("p(0)"), las=2, lwd=0, cex.axis=0.7)
+			axis(4, at=p0, label=expression(p[0]), las=2, lwd=0)
+			abline(h=p0, lty=2, lwd=2, col="red")
 		}
 
 		abline(h=0, col="gray")
@@ -403,7 +448,7 @@ PlotMeanP <- function(SimData, ExpFlag=FALSE)
 #==============================================================================
 # PlotVarianceP
 #==============================================================================
-PlotVarianceP <- function(SimData, ExpFlag=FALSE) 
+PlotVarianceP <- function(SimData, ExpVarFlag=FALSE) 
 {
 #------------------------------------------------------------------------------
 	if (SimData$Param$Flag) {
@@ -430,14 +475,14 @@ PlotVarianceP <- function(SimData, ExpFlag=FALSE)
 		plot(BoxX, BoxY, type="n", main="", xlab="Time (generations)", 
 			ylab="Variance of P", bty="n")
 
-		if (ExpFlag) {
-			axis(4, at=c(p0*(1-p0)), label=c("p(0)(1-p(0))"), las=2, lwd=0, 
-				cex.axis=0.7)
-			# axis(4, at=p0*(1-p0), label=expression(p[0](1-p[0])), las=2, lwd=0)
-			abline(h=p0*(1-p0), col="gray")
+		if (ExpVarFlag) {
+			# axis(4, at=c(p0*(1-p0)), label=c("p(0)(1-p(0))"), las=2, lwd=0, 
+				# cex.axis=0.7)
+			axis(4, at=p0*(1-p0), label=expression(p[0](1-p[0])), las=2, lwd=0)
+			abline(h=p0*(1-p0), lty=2, lwd=2, col="gray")
 			ValX <- 0:NbGen
 			ValY <- p0*(1-p0)*(1-(1-1/NC)^ValX)
-			lines(ValX, ValY, lty=2, col="red")
+			lines(ValX, ValY, lty=2, lwd=2, col="red")
 		}
 
 		abline(h=0, col="gray")
@@ -469,7 +514,7 @@ PlotVarianceP <- function(SimData, ExpFlag=FALSE)
 #==============================================================================
 # PlotFixationProbability
 #==============================================================================
-PlotFixationProbability <- function(SimData, ExpFlag=FALSE) 
+PlotFixationProbability <- function(SimData, ExpFixFlag=FALSE) 
 {
 #------------------------------------------------------------------------------
 	if (SimData$Param$Flag) {
@@ -498,17 +543,18 @@ PlotFixationProbability <- function(SimData, ExpFlag=FALSE)
 
 		abline(h=seq(from=0, to=1, by=0.1), col="gray", lty=2)
 		
-		if (ExpFlag) {
-			abline(h=p0, lty=2, col=Color_FA)
-			abline(h=1-p0, lty=2, col=Color_LA)
+		if (ExpFixFlag) {
+			abline(h=p0, lty=2, lwd=2, col=Color_FA)
+			abline(h=1-p0, lty=2, lwd=2, col=Color_LA)
 			if (p0 == 0.5) {
-				axis(4, at=p0, label="p(0)=1-p(0)", las=2, lwd=0, cex.axis=0.7)
+				axis(4, at=p0, label=expression(p[0]), las=2, lwd=0, cex.axis=1)
+				# axis(4, at=p0, label="p(0)=1-p(0)", las=2, lwd=0, cex.axis=0.7)
 			} else {
-				axis(4, at=p0, label="p(0)", las=2, lwd=0, cex.axis=0.7)
-				axis(4, at=1-p0, label="1-p(0)", las=2, lwd=0, cex.axis=0.7)
+				# axis(4, at=p0, label="p(0)", las=2, lwd=0, cex.axis=0.7)
+				# axis(4, at=1-p0, label="1-p(0)", las=2, lwd=0, cex.axis=0.7)
+				axis(4, at=p0, label=expression(p[0]), las=2, lwd=0, cex.axis=1)
+				axis(4, at=1-p0, label=expression(1-p[0]), las=2, lwd=0, cex.axis=1)
 			}
-			# axis(4, at=c(p0, 1-p0), label=c(expression(p[0]), 
-				# expression(1-p[0])), las=2, lwd=0)
 		}
 
 		abline(h=0, col="gray")
@@ -526,7 +572,7 @@ PlotFixationProbability <- function(SimData, ExpFlag=FALSE)
 		ValY <- NbPoly/NbRep
 		lines(ValX, ValY, col="black")
 		
-		legend("topright", legend=c("Polym", "A fixed", "a fixed"), 
+		legend("topright", legend=c("Polym", "A fixed", "B fixed"), 
 			col=c("black", Color_FA, Color_LA), lty=1, bg="white")
 
 		par(ParBak)
@@ -543,7 +589,7 @@ PlotFixationProbability <- function(SimData, ExpFlag=FALSE)
 #==============================================================================
 # PlotFixationTime
 #==============================================================================
-PlotFixationTime <- function(SimData, ExpFlag=FALSE)
+PlotFixationTime <- function(SimData, ExpTimeFlag=FALSE)
 {
 #------------------------------------------------------------------------------
 	if (SimData$Param$Flag) {
@@ -572,7 +618,7 @@ PlotFixationTime <- function(SimData, ExpFlag=FALSE)
 
 		A_label <- sprintf("A\nObserved mean = %5.1f", MeanTimeFA)
 		B_label <- sprintf("B\nObserved mean = %5.1f", MeanTimeLA)
-		if (ExpFlag) {
+		if (ExpTimeFlag) {
 			A_label <- sprintf("%s\nExpected mean = %5.1f", A_label, ExpTimeFA)
 			B_label <- sprintf("%s\nExpected mean = %5.1f", B_label, ExpTimeLA)
 		}
@@ -589,7 +635,7 @@ PlotFixationTime <- function(SimData, ExpFlag=FALSE)
 			Plot <- Plot + labs(x="Time (generations)", y="Density")
 			Plot <- Plot + geom_vline(xintercept=c(MeanTimeFA, MeanTimeLA), 
 				colour=Color_AB, size=1)
-			if (ExpFlag) {
+			if (ExpTimeFlag) {
 				Plot <- Plot + geom_vline(xintercept=c(ExpTimeFA, ExpTimeLA), 
 					colour=Color_AB, linetype="dotted", size=1)
 			}
