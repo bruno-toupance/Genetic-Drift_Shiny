@@ -6,15 +6,14 @@ Genetic Drift simulator in R + Shiny
 - colorspace
 - ggplot2
 - shiny
-- shinyFiles
-- fs
 
+To install/update the packages, run the following commands into the R console:
 ```{r }
 install.packages("colorspace")
 install.packages("ggplot2")
 install.packages("shiny")
-install.packages("shinyFiles")
-install.packages("fs")
+# install.packages("shinyFiles")
+# install.packages("fs")
 ```
 
 

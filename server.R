@@ -1,6 +1,6 @@
 #==============================================================================
 #    server.R : Genetic Drift Simulator Server
-#    Copyright (C) 2020  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Copyright (C) 2021  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,8 +18,11 @@
 
 
 library(shiny)
-library(shinyFiles)
-library(fs)
+
+#----------------------- Disable data export using 'shinyFiles'
+# library(shinyFiles)
+# library(fs)
+#----------------------- Disable data export using 'shinyFiles'
 
 source("Genetic-Drift.R")
 
@@ -34,11 +37,11 @@ shinyServer(
 		DriftData <- reactive({
 			Tmp <- input$go
 			return(
-				SimulateData(N=input$N
-					, p0=input$p0 
-					, NbGen=input$NbGen
-					, NbRep=input$NbRep
-					, DipFlag=input$DipFlag
+				SimulateData(N = input$N
+						, p0 = input$p0 
+						, NbGen = input$NbGen
+						, NbRep = input$NbRep
+						, DipFlag = input$DipFlag
 					)
 				)
 		})
@@ -47,50 +50,52 @@ shinyServer(
 
 #------------------------------------------------------------------------------
 		observeEvent(input$mul2, {
-			updateNumericInput(session, "N", value=input$N*2)
-			updateNumericInput(session, "NbGen", value=input$NbGen*2)
+			updateNumericInput(session, "N", value = input$N * 2)
+			updateNumericInput(session, "NbGen", value = input$NbGen * 2)
 		})
 #------------------------------------------------------------------------------
 		observeEvent(input$div2, {
-			updateNumericInput(session, "N", value=input$N %/% 2)
-			updateNumericInput(session, "NbGen", value=input$NbGen %/% 2)
+			updateNumericInput(session, "N", value = input$N %/% 2)
+			updateNumericInput(session, "NbGen", value = input$NbGen %/% 2)
 		})
 #------------------------------------------------------------------------------
-		observe({
-			volumes <- c("Home"=fs::path_home(), "R Installation"=R.home(), getVolumes()())
-			# shinyFileSave(input, id="CntSaveBtn", roots=volumes, session=session)
-			shinyFileSave(input, id="CntSaveBtn", roots=volumes, session=session, restrictions=system.file(package="base"))
-			file_info <- parseSavePath(roots=volumes, selection=input$CntSaveBtn)
-			if (nrow(file_info) > 0) {
-				export_grid(DriftData(), as.character(file_info$datapath))
-			}
-		})
+#----------------------- Disable data export using 'shinyFiles'
+#		observe({
+#			volumes <- c("Home" = fs::path_home(), "R Installation" = R.home(), getVolumes()())
+#			# shinyFileSave(input, id = "CntSaveBtn", roots = volumes, session = session)
+#			shinyFileSave(input, id = "CntSaveBtn", roots = volumes, session = session, r#estrictions = system.file(package = "base"))
+#			file_info <- parseSavePath(roots = volumes, selection = input$CntSaveBtn)
+#			if (nrow(file_info) > 0) {
+#				export_grid(DriftData(), as.character(file_info$datapath))
+#			}
+#		})
+#----------------------- Disable data export using 'shinyFiles'
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 		output$driftPlotFreq <- renderPlot({
-			Plot <- PlotFreq(DriftData(), FixFlag=input$FixFlag)
+			Plot <- PlotFreq(DriftData(), FixFlag = input$FixFlag)
 		})
 #------------------------------------------------------------------------------
 		output$driftPlotFreqDensity <- renderPlot({
-			Plot <- PlotFreqDensity(DriftData(), CntFlag=input$CntFlag)
+			Plot <- PlotFreqDensity(DriftData(), CntFlag = input$CntFlag)
 		})
 #------------------------------------------------------------------------------
 		output$driftPlotMeanP <- renderPlot({
-			Plot <- PlotMeanP(DriftData(), ExpMeanFlag=input$ExpMeanFlag)
+			Plot <- PlotMeanP(DriftData(), ExpMeanFlag = input$ExpMeanFlag)
 		})
 #------------------------------------------------------------------------------
 		output$driftPlotVarianceP <- renderPlot({
-			Plot <- PlotVarianceP(DriftData(), ExpVarFlag=input$ExpVarFlag)
+			Plot <- PlotVarianceP(DriftData(), ExpVarFlag = input$ExpVarFlag)
 		})
 #------------------------------------------------------------------------------
 		output$driftPlotFixationProbability <- renderPlot({
-			Plot <- PlotFixationProbability(DriftData(), ExpFixFlag=input$ExpFixFlag)
+			Plot <- PlotFixationProbability(DriftData(), ExpFixFlag = input$ExpFixFlag)
 		})
 #------------------------------------------------------------------------------
 		output$driftPlotFixationTime <- renderPlot({
-			Plot <- PlotFixationTime(DriftData(), ExpTimeFlag=input$ExpTimeFlag)
+			Plot <- PlotFixationTime(DriftData(), ExpTimeFlag = input$ExpTimeFlag)
 		})
 #------------------------------------------------------------------------------
 
