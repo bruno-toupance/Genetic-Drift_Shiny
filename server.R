@@ -86,6 +86,10 @@ shinyServer(
 
 
 #------------------------------------------------------------------------------
+		output$count_table <- renderTable({
+			get_count_df(drift_data())
+		}, digits = 0)
+#------------------------------------------------------------------------------
 		output$driftPlotFreq <- renderPlot({
 			Plot <- PlotFreq(drift_data(), fix_flag = input$fix_flag)
 		})

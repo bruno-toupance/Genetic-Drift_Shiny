@@ -189,6 +189,28 @@ SimulateData <- function(nb_ind = 10, ini_p = 0.5, nb_gen = 15, nb_rep = 10,
 
 
 #==============================================================================
+# get_count_df
+#==============================================================================
+get_count_df <- function(sim_data)
+{
+#------------------------------------------------------------------------------
+	if (sim_data$param$flag) {
+		count_mat <- sim_data$count_mat
+		count_df <- as.data.frame(count_mat)
+		nb_gen <- sim_data$nb_gen
+		nb_copies <- sim_data$nb_copies
+		xi <- 0:nb_copies
+		colnames(count_df) <- paste("ni_gen_", 0:nb_gen, sep = "")
+		count_df <- cbind(xi, count_df)
+		
+		return(count_df)
+	}
+#------------------------------------------------------------------------------
+}
+
+
+
+#==============================================================================
 # export_grid
 #==============================================================================
 export_grid <- function(sim_data, file_path)

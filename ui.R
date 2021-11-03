@@ -66,6 +66,7 @@ shinyUI(
 					, checkboxInput(inputId = 'fix_flag', label = 'Show fixation', FALSE)
 					, plotOutput(outputId = "driftPlotFreq", height = "600px")
 					)
+
 				, tabPanel(title = "Plot Density"
 					, splitLayout(
 						checkboxInput(inputId = 'count_flag', label = 'Show count', FALSE)
@@ -81,18 +82,25 @@ shinyUI(
 					, plotOutput(outputId = "driftPlotFreqDensity", height = "600px")
 					)
 					
+				, tabPanel(title = "Count Table"
+					, tableOutput(outputId = "count_table")
+					)
+					
 				, tabPanel(title = "Mean of P"
 					, checkboxInput(inputId = 'expected_mean_flag', label = 'Show expected', FALSE)
 					, plotOutput(outputId = "driftPlotMeanP", height = "600px")
 					)
+
 				, tabPanel(title = "Variance of P"
 					, checkboxInput(inputId = 'expected_var_flag', label = 'Show expected', FALSE)
 					, plotOutput(outputId = "driftPlotVarianceP", height = "600px")
 					)
+
 				, tabPanel(title = "Fixation Probability"
 					, checkboxInput(inputId = 'expected_prob_flag', label = 'Show expected', FALSE)
 					, plotOutput(outputId = "driftPlotFixationProbability", height = "600px")
 					)
+
 				, tabPanel(title = "Fixation Time"
 					, checkboxInput(inputId = 'expected_time_flag', label = 'Show expected', FALSE)
 					, plotOutput(outputId = "driftPlotFixationTime", height = "600px")
