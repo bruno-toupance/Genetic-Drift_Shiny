@@ -70,7 +70,9 @@ shinyUI(
 					, splitLayout(
 						checkboxInput(inputId = 'count_flag', label = 'Show count', FALSE)
 						
-						, actionButton(inputId = 'export_count', label = 'Export')
+#----------------------- Disable data export
+#						, actionButton(inputId = 'export_count', label = 'Export')
+#----------------------- Disable data export
 						
 #----------------------- Disable data export using 'shinyFiles'
 #						, shinySaveButton(id = "count_save_button", label = "Save file", title = "Save file as ...", filetype = list(txt = "txt"))

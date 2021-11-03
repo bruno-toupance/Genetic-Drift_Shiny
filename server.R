@@ -59,12 +59,18 @@ shinyServer(
 			updateNumericInput(session, "nb_gen", value = input$nb_gen %/% 2)
 		})
 #------------------------------------------------------------------------------
-		observeEvent(input$export_count, {
-			alpha_num <- c(0:9, LETTERS[1:6])
-			rnd_num <- paste(sample(alpha_num, size = 8, replace = TRUE), collapse = "")
-			file_path <- sprintf("drift_data_%s.txt", rnd_num)
-			export_grid(drift_data(), file_path)
-		})
+
+
+#------------------------------------------------------------------------------
+#----------------------- Disable data export
+#		observeEvent(input$export_count, {
+#			alpha_num <- c(0:9, LETTERS[1:6])
+#			rnd_num <- paste(sample(alpha_num, size = 8, replace = TRUE), collapse = "")
+#			file_path <- sprintf("drift_data_%s.txt", rnd_num)
+#			export_grid(drift_data(), file_path)
+#		})
+#----------------------- Disable data export
+
 #------------------------------------------------------------------------------
 #----------------------- Disable data export using 'shinyFiles'
 #		observe({
