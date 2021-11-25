@@ -12,13 +12,11 @@ To install/update the packages, run the following commands into the R console:
 install.packages("colorspace")
 install.packages("ggplot2")
 install.packages("shiny")
-# install.packages("shinyFiles")
-# install.packages("fs")
 ```
 
 
 ## Run from R
 ```{r }
-require(shiny)
-runGitHub("Genetic-Drift_Shiny", "bruno-toupance")
+library(shiny)
+runGitHub(repo = "Genetic-Drift_Shiny", username = "bruno-toupance")
 ```

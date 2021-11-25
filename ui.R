@@ -19,10 +19,6 @@
 
 library(shiny)
 
-#----------------------- Disable data export using 'shinyFiles'
-# library(shinyFiles)
-#----------------------- Disable data export using 'shinyFiles'
-
 
 #==============================================================================
 # shinyUI
@@ -41,18 +37,14 @@ shinyUI(
 #------------------------------------------------------------------------------
 		sidebarPanel(
 			wellPanel(
-				  checkboxInput(inputId = 'diploid_flag', label = 'Diploid', TRUE)
-				, numericInput(inputId = 'nb_ind', label = 'Population size - integer:', value = 50)
-				# , numericInput(inputId = 'nb_ind', label = 'Population size - integer:', value = 16)
-				, numericInput(inputId = 'nb_gen', label = 'Number of generations - integer:', value = 100)
-				# , numericInput(inputId = 'nb_gen', label = 'Number of generations - integer:', value = 20)
-				, numericInput(inputId = 'ini_p', label = 'Initial frequency of allele A - numeric [0, 1]:', value = 0.2)
-				# , numericInput(inputId = 'ini_p', label = 'Initial frequency p(0) of allele A - numeric [0, 1]:', value = 0.5, min = 0, max = 1, step = 0.1)
-				, numericInput(inputId = 'nb_rep', label = 'Number of repetitions - integer:', value = 1)
-				# , numericInput(inputId = 'nb_rep', label = 'Number of repetitions - integer:', value = 105)
-				, actionButton(inputId = 'go', label = 'New Simulation', icon("random"))
-				, actionButton(inputId = 'mul2', label = 'x 2')
-				, actionButton(inputId = 'div2', label = 'x 1/2')
+				checkboxInput(inputId = 'diploid_flag', label = 'Diploid', value = TRUE), 
+				numericInput(inputId = 'nb_ind', label = 'Population size:', value = 50), 
+				numericInput(inputId = 'ini_p', label = 'Initial frequency of allele A:', value = 0.2), 
+				numericInput(inputId = 'nb_gen', label = 'Number of generations:', value = 100), 
+				numericInput(inputId = 'nb_rep', label = 'Number of repetitions:', value = 1), 
+				actionButton(inputId = 'go', label = 'New Simulation', icon("random")), 
+				actionButton(inputId = 'mul2', label = 'x 2'), 
+				actionButton(inputId = 'div2', label = 'x 1/2')
 			)
 		),
 
@@ -61,50 +53,55 @@ shinyUI(
 # Result Panel
 #------------------------------------------------------------------------------
 		mainPanel(
-			tabsetPanel(type = "tabs"
-				, tabPanel(title = "Plot"
-					, checkboxInput(inputId = 'fix_flag', label = 'Show fixation', FALSE)
-					, plotOutput(outputId = "driftPlotFreq", height = "600px")
-					)
+			tabsetPanel(
+				type = "tabs",
+				
+				tabPanel(
+					title = "Plot", 
+					checkboxInput(inputId = 'fix_flag', label = 'Show fixation', value = FALSE), 
+					plotOutput(outputId = "driftPlotFreq", height = "600px")
+				),
 
-				, tabPanel(title = "Plot Density"
-					, splitLayout(
-						checkboxInput(inputId = 'count_flag', label = 'Show count', FALSE)
-						
-#----------------------- Disable data export
-#						, actionButton(inputId = 'export_count', label = 'Export')
-#----------------------- Disable data export
-						
-#----------------------- Disable data export using 'shinyFiles'
-#						, shinySaveButton(id = "count_save_button", label = "Save file", title = "Save file as ...", filetype = list(txt = "txt"))
-#----------------------- Disable data export using 'shinyFiles'
-						)
-					, plotOutput(outputId = "driftPlotFreqDensity", height = "600px")
-					)
+				tabPanel(
+					title = "Plot Density",
+					splitLayout(
+						checkboxInput(inputId = 'count_flag', label = 'Show count', value = FALSE)
+					), 
+					plotOutput(outputId = "driftPlotFreqDensity", height = "600px")
+				),
 					
-				, tabPanel(title = "Count Table"
-					, tableOutput(outputId = "count_table")
-					)
+				tabPanel(
+					title = "Count Table",
+					splitLayout(
+						downloadButton(outputId = 'export_count', label = 'Download')
+					), 
+					tableOutput(outputId = "count_table")
+				),
 					
-				, tabPanel(title = "Mean of P"
-					, checkboxInput(inputId = 'expected_mean_flag', label = 'Show expected', FALSE)
-					, plotOutput(outputId = "driftPlotMeanP", height = "600px")
-					)
+				tabPanel(
+					title = "Mean of P", 
+					checkboxInput(inputId = 'expected_mean_flag', label = 'Show expected', value = FALSE), 
+					plotOutput(outputId = "driftPlotMeanP", height = "600px")
+				),
 
-				, tabPanel(title = "Variance of P"
-					, checkboxInput(inputId = 'expected_var_flag', label = 'Show expected', FALSE)
-					, plotOutput(outputId = "driftPlotVarianceP", height = "600px")
-					)
+				tabPanel(
+					title = "Variance of P", 
+					checkboxInput(inputId = 'expected_var_flag', label = 'Show expected', value = FALSE), 
+					plotOutput(outputId = "driftPlotVarianceP", height = "600px")
+				),
 
-				, tabPanel(title = "Fixation Probability"
-					, checkboxInput(inputId = 'expected_prob_flag', label = 'Show expected', FALSE)
-					, plotOutput(outputId = "driftPlotFixationProbability", height = "600px")
-					)
+				tabPanel(
+					title = "Fixation Probability", 
+					checkboxInput(inputId = 'expected_prob_flag', label = 'Show expected', value = FALSE), 
+					plotOutput(outputId = "driftPlotFixationProbability", height = "600px")
+				),
 
-				, tabPanel(title = "Fixation Time"
-					, checkboxInput(inputId = 'expected_time_flag', label = 'Show expected', FALSE)
-					, plotOutput(outputId = "driftPlotFixationTime", height = "600px")
-					)
+				tabPanel(
+					title = "Fixation Time", 
+					checkboxInput(inputId = 'expected_time_flag', label = 'Show expected', value = FALSE),
+					plotOutput(outputId = "driftPlotFixationTime", height = "600px")
+				)
+
 			)
 		)
 #------------------------------------------------------------------------------

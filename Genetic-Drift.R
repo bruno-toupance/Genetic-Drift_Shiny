@@ -17,10 +17,64 @@
 #==============================================================================
 
 
-require(ggplot2)
-require(colorspace)
-# require(scales)
-# require(MASS)
+library(ggplot2)
+library(colorspace)
+# library(scales)
+# library(MASS)
+
+
+#==============================================================================
+# check_integer
+#==============================================================================
+check_integer <- function(
+	x = 0,
+	min_x = -Inf, 
+	label = "x", 
+	rtn = list(check_flag = TRUE, check_msg = "")) 
+{
+	if (is.numeric(x)) {
+		if (x == round(x)) {
+			if (x < min_x) {
+				rtn$check_flag <- FALSE
+				rtn$check_msg <- sprintf("%s\nFAIL: [%s] out of bounds", rtn$check_msg, label)
+			}
+		} else {
+			rtn$check_flag <- FALSE
+			rtn$check_msg <- sprintf("%s\nFAIL: [%s] not integer", rtn$check_msg, label)
+		}
+	} else {
+		rtn$check_flag <- FALSE
+		rtn$check_msg <- sprintf("%s\nFAIL: [%s] not numeric", rtn$check_msg, label)
+	}
+#------------------------------------------------------------------------------
+	return(rtn)
+}
+
+
+#==============================================================================
+# check_real
+#==============================================================================
+check_real <- function(
+	x = 0.0,
+	min_x = -Inf, 
+	max_x = +Inf, 
+	label = "x", 
+	rtn = list(check_flag = TRUE, check_msg = "")) 
+{
+	if (is.numeric(x)) {
+		if ((x < min_x) || (x > max_x)) {
+			rtn$check_flag <- FALSE
+			rtn$check_msg <- sprintf("%s\nFAIL: [%s] out of bounds", rtn$check_msg, label)
+		}
+	} else {
+		rtn$check_flag <- FALSE
+		rtn$check_msg <- sprintf("%s\nFAIL: [%s] not numeric", rtn$check_msg, label)
+	}
+#------------------------------------------------------------------------------
+	return(rtn)
+}
+
+
 
 
 #==============================================================================
@@ -28,66 +82,15 @@ require(colorspace)
 #==============================================================================
 check_parameters <- function(nb_ind = 10, ini_p = 0.5, nb_gen = 15, nb_rep = 10) 
 {
+	check_list <- list(check_flag = TRUE, check_msg = "")
 #------------------------------------------------------------------------------
-	check_flag <- TRUE
-	check_msg <- ""
+	check_list <- check_integer(nb_ind, min_x = 1, label = "population size", rtn = check_list)
+	check_list <- check_integer(nb_gen, min_x = 1, label = "number of generations", rtn = check_list)
+	check_list <- check_real(ini_p, min_x = 0, max_x = 1, label = "initial frequency", rtn = check_list)
+	check_list <- check_integer(nb_rep, min_x = 1, label = "number of repetitions", rtn = check_list)
 #------------------------------------------------------------------------------
-	if (is.numeric(nb_ind)) {
-		if (nb_ind == round(nb_ind)) {
-			if (nb_ind < 1) {
-				check_flag <- FALSE
-				check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ N ] out of bounds")
-			}
-		} else {
-			check_flag <- FALSE
-			check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ N ] not integer")
-		}
-	} else {
-		check_flag <- FALSE
-		check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ N ] not numeric")
-	}
-#------------------------------------------------------------------------------
-	if (is.numeric(ini_p)) {
-		if ((ini_p < 0) | (ini_p > 1)) {
-			check_flag <- FALSE
-			check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ p(0) ] out of bounds")
-		}
-	} else {
-		check_flag <- FALSE
-		check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ p(0) ] not numeric")
-	}
-#------------------------------------------------------------------------------
-	if (is.numeric(nb_gen)) {
-		if (nb_gen == round(nb_gen)) {
-			if (nb_gen < 1) {
-				check_flag <- FALSE
-				check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_gen ] out of bounds")
-			}
-		} else {
-			check_flag <- FALSE
-			check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_gen ] not integer")
-		}
-	} else {
-		check_flag <- FALSE
-		check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_gen ] not numeric")
-	}
-#------------------------------------------------------------------------------
-	if (is.numeric(nb_rep)) {
-		if (nb_rep == round(nb_rep)) {
-			if (nb_rep < 1) {
-				check_flag <- FALSE
-				check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_rep ] out of bounds")
-			}
-		} else {
-			check_flag <- FALSE
-			check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_rep ] not integer")
-		}
-	} else {
-		check_flag <- FALSE
-		check_msg <- sprintf("%s\n%s", check_msg, "FAIL: [ nb_rep ] not numeric")
-	}
-#------------------------------------------------------------------------------
-	return(list(msg = check_msg, flag = check_flag, nb_ind = nb_ind, 
+	return(list(msg = check_list$check_msg, flag = check_list$check_flag, 
+		nb_ind = nb_ind, 
 		ini_p = ini_p, nb_gen = nb_gen, nb_rep = nb_rep))
 #------------------------------------------------------------------------------
 }
@@ -207,26 +210,6 @@ get_count_df <- function(sim_data)
 	}
 #------------------------------------------------------------------------------
 }
-
-
-
-#==============================================================================
-# export_grid
-#==============================================================================
-export_grid <- function(sim_data, file_path)
-{
-#------------------------------------------------------------------------------
-	if (sim_data$param$flag) {
-		count_mat <- sim_data$count_mat
-		nb_gen <- sim_data$nb_gen
-		nb_copies <- sim_data$nb_copies
-		
-		write.table(count_mat, file = file_path, sep = "\t")
-		# write.matrix(count_mat, file = file_path, sep = "\t")  # 'MASS' package
-	}
-#------------------------------------------------------------------------------
-}
-#==============================================================================
 
 
 

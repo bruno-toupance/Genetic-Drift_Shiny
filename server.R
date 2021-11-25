@@ -19,11 +19,6 @@
 
 library(shiny)
 
-#----------------------- Disable data export using 'shinyFiles'
-# library(shinyFiles)
-# library(fs)
-#----------------------- Disable data export using 'shinyFiles'
-
 source("Genetic-Drift.R")
 
 
@@ -34,17 +29,20 @@ shinyServer(
 	function(input, output, session) {
 
 #------------------------------------------------------------------------------
-		drift_data <- reactive({
-			tmp <- input$go
-			return(
-				SimulateData(nb_ind = input$nb_ind
-						, ini_p = input$ini_p 
-						, nb_gen = input$nb_gen
-						, nb_rep = input$nb_rep
-						, diploid_flag = input$diploid_flag
+		drift_data <- reactive(
+			{
+				tmp <- input$go
+				return(
+					SimulateData(
+						nb_ind = input$nb_ind, 
+						ini_p = input$ini_p , 
+						nb_gen = input$nb_gen, 
+						nb_rep = input$nb_rep, 
+						diploid_flag = input$diploid_flag
 					)
 				)
-		})
+			}
+		)
 #------------------------------------------------------------------------------
 
 
@@ -62,57 +60,62 @@ shinyServer(
 
 
 #------------------------------------------------------------------------------
-#----------------------- Disable data export
-#		observeEvent(input$export_count, {
-#			alpha_num <- c(0:9, LETTERS[1:6])
-#			rnd_num <- paste(sample(alpha_num, size = 8, replace = TRUE), collapse = "")
-#			file_path <- sprintf("drift_data_%s.txt", rnd_num)
-#			export_grid(drift_data(), file_path)
-#		})
-#----------------------- Disable data export
-
+		output$export_count <- downloadHandler(
+				filename = function() {
+					alpha_num <- c(0:9, LETTERS[1:6])
+					rnd_num <- paste(sample(alpha_num, size = 8, replace = TRUE), collapse = "")
+					file_path <- sprintf("drift_data_%s_%s.txt", Sys.Date(), rnd_num)
+					return(file_path)
+				},
+				content = function(file_path) {
+					write.table(get_count_df(drift_data()), 
+						file = file_path, sep = "\t", 
+						quote = FALSE, row.names = FALSE)
+				}
+		)
 #------------------------------------------------------------------------------
-#----------------------- Disable data export using 'shinyFiles'
-#		observe({
-#			volumes <- c("Home" = fs::path_home(), "R Installation" = R.home(), getVolumes()())
-#			shinyFileSave(input, id = "count_save_button", roots = volumes, session = session, restrictions = system.file(package = "base"))
-#			file_info <- parseSavePath(roots = volumes, selection = input$count_save_button)
-#			if (nrow(file_info) > 0) {
-#				export_grid(drift_data(), as.character(file_info$datapath))
-#			}
-#		})
-#----------------------- Disable data export using 'shinyFiles'
+		output$count_table <- renderTable(
+			{
+				get_count_df(drift_data())
+			}, 
+			digits = 0
+		)
 #------------------------------------------------------------------------------
-
-
+		output$driftPlotFreq <- renderPlot(
+			{
+				Plot <- PlotFreq(drift_data(), fix_flag = input$fix_flag)
+			}
+		)
 #------------------------------------------------------------------------------
-		output$count_table <- renderTable({
-			get_count_df(drift_data())
-		}, digits = 0)
+		output$driftPlotFreqDensity <- renderPlot(
+			{
+				Plot <- PlotFreqDensity(drift_data(), count_flag = input$count_flag)
+			}
+		)
 #------------------------------------------------------------------------------
-		output$driftPlotFreq <- renderPlot({
-			Plot <- PlotFreq(drift_data(), fix_flag = input$fix_flag)
-		})
+		output$driftPlotMeanP <- renderPlot(
+			{
+				Plot <- PlotMeanP(drift_data(), expected_mean_flag = input$expected_mean_flag)
+			}
+		)
 #------------------------------------------------------------------------------
-		output$driftPlotFreqDensity <- renderPlot({
-			Plot <- PlotFreqDensity(drift_data(), count_flag = input$count_flag)
-		})
+		output$driftPlotVarianceP <- renderPlot(
+			{
+				Plot <- PlotVarianceP(drift_data(), expected_var_flag = input$expected_var_flag)
+			}
+		)
 #------------------------------------------------------------------------------
-		output$driftPlotMeanP <- renderPlot({
-			Plot <- PlotMeanP(drift_data(), expected_mean_flag = input$expected_mean_flag)
-		})
+		output$driftPlotFixationProbability <- renderPlot(
+			{
+				Plot <- PlotFixationProbability(drift_data(), expected_prob_flag = input$expected_prob_flag)
+			}
+		)
 #------------------------------------------------------------------------------
-		output$driftPlotVarianceP <- renderPlot({
-			Plot <- PlotVarianceP(drift_data(), expected_var_flag = input$expected_var_flag)
-		})
-#------------------------------------------------------------------------------
-		output$driftPlotFixationProbability <- renderPlot({
-			Plot <- PlotFixationProbability(drift_data(), expected_prob_flag = input$expected_prob_flag)
-		})
-#------------------------------------------------------------------------------
-		output$driftPlotFixationTime <- renderPlot({
-			Plot <- PlotFixationTime(drift_data(), expected_time_flag = input$expected_time_flag)
-		})
+		output$driftPlotFixationTime <- renderPlot(
+			{
+				Plot <- PlotFixationTime(drift_data(), expected_time_flag = input$expected_time_flag)
+			}
+		)
 #------------------------------------------------------------------------------
 
 	}
