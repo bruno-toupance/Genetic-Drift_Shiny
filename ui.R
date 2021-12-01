@@ -38,10 +38,10 @@ shinyUI(
 		sidebarPanel(
 			wellPanel(
 				checkboxInput(inputId = 'diploid_flag', label = 'Diploid', value = TRUE), 
-				numericInput(inputId = 'nb_ind', label = 'Population size:', value = 50), 
-				numericInput(inputId = 'ini_p', label = 'Initial frequency of allele A:', value = 0.2), 
-				numericInput(inputId = 'nb_gen', label = 'Number of generations:', value = 100), 
-				numericInput(inputId = 'nb_rep', label = 'Number of repetitions:', value = 1), 
+				numericInput(inputId = 'nb_ind', label = 'Population size:', min = 1, value = 50), 
+				numericInput(inputId = 'ini_p', label = 'Initial frequency of allele A:', min = 0, max = 1, step = 0.1, value = 0.2), 
+				numericInput(inputId = 'nb_gen', label = 'Number of generations:', min = 1, value = 100), 
+				numericInput(inputId = 'nb_rep', label = 'Number of repetitions:', min = 1, value = 1), 
 				actionButton(inputId = 'go', label = 'New Simulation', icon("random")), 
 				actionButton(inputId = 'mul2', label = 'x 2'), 
 				actionButton(inputId = 'div2', label = 'x 1/2')

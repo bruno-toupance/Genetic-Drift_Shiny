@@ -29,12 +29,13 @@ library(colorspace)
 check_integer <- function(
 	x = 0,
 	min_x = -Inf, 
+	max_x = +Inf, 
 	label = "x", 
 	rtn = list(check_flag = TRUE, check_msg = "")) 
 {
 	if (is.numeric(x)) {
 		if (x == round(x)) {
-			if (x < min_x) {
+			if ((x < min_x) || (x > max_x)) {
 				rtn$check_flag <- FALSE
 				rtn$check_msg <- sprintf("%s\nFAIL: [%s] out of bounds", rtn$check_msg, label)
 			}
@@ -205,6 +206,7 @@ get_count_df <- function(sim_data)
 		xi <- 0:nb_copies
 		colnames(count_df) <- paste("ni_gen_", 0:nb_gen, sep = "")
 		count_df <- cbind(xi, count_df)
+		count_df <- count_df[nrow(count_df):1, ]
 		
 		return(count_df)
 	}
@@ -240,89 +242,97 @@ PlotFreq <- function(sim_data, fix_flag = FALSE)
 		nb_gen <- sim_data$nb_gen
 		nb_rep <- sim_data$nb_rep
 
-		par_bak <- par(no.readonly = TRUE)
+		if (nb_rep > 1000) {
+			msg <- sprintf("\ntoo many replicates to display")
+			PlotError(msg)
+		} else {
+			par_bak <- par(no.readonly = TRUE)
 
-		layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
+			layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
 
-		par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, top = 0.5 + 0, right = 0.5 + 5))
-		box_y <- c(0, 1)
-		box_x <- c(0, nb_gen)
-		plot(box_x, box_y, type = "n", main = "", xlab = "Time (generations)", 
-			ylab = "Frequency P", bty = "n")
+			par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, top = 0.5 + 0, right = 0.5 + 5))
+			box_y <- c(0, 1)
+			box_x <- c(0, nb_gen)
+			plot(box_x, box_y, type = "n",
+				xlim = c(0, nb_gen), 
+				main = "", 
+				xlab = "Time (generations)", 
+				ylab = "Frequency P", bty = "n")
 
-		abline(h = 0, col = "gray")
-		abline(h = 1, col = "gray")
-	
-		# color_rep <- hue_pal()(nb_rep)  # 'scales' package
-		# color_rep <- rainbow(nb_rep)
-		color_rep <- rainbow_hcl(nb_rep)   # 'colorspace' package
-		color_2 <- rainbow_hcl(2)   # 'colorspace' package
-		color_A_fixed <- color_2[1]
-		color_A_lost <- color_2[2]
+			abline(h = 0, col = "gray")
+			abline(h = 1, col = "gray")
 		
-		val_x <- 0:nb_gen
-		pos_A_fixed <- freq_mat[, nb_gen + 1] == 1
-		pos_A_lost <- freq_mat[, nb_gen + 1] == 0
-		pos_polym <- !(pos_A_fixed | pos_A_lost) 
-		for (i in 1:nb_rep) {
-			val_y <- freq_mat[i, ]
-			if (fix_flag) {
-				pos <- which((val_y != 0) & (val_y != 1))
-				pos_0 <- which(val_y == 0)
-				pos_1 <- which(val_y == 1)
-				if (length(pos_0) > 1) {
-					pos_0 <- pos_0[1]
-					pos <- append(pos, pos_0)
-					lines(val_x[pos], val_y[pos], col = color_A_lost)
-					points(val_x[pos_0], val_y[pos_0], pch = 20, col = color_A_lost)
-				} else {
-					if (length(pos_1) > 1) {
-						pos_1 <- pos_1[1]
-						pos <- append(pos, pos_1)
-						lines(val_x[pos], val_y[pos], col = color_A_fixed)
-						points(val_x[pos_1], val_y[pos_1], pch = 20, col = color_A_fixed)
+			# color_rep <- hue_pal()(nb_rep)  # 'scales' package
+			# color_rep <- rainbow(nb_rep)
+			color_rep <- rainbow_hcl(nb_rep)   # 'colorspace' package
+			color_2 <- rainbow_hcl(2)   # 'colorspace' package
+			color_A_fixed <- color_2[1]
+			color_A_lost <- color_2[2]
+			
+			val_x <- 0:nb_gen
+			pos_A_fixed <- freq_mat[, nb_gen + 1] == 1
+			pos_A_lost <- freq_mat[, nb_gen + 1] == 0
+			pos_polym <- !(pos_A_fixed | pos_A_lost) 
+			for (i in 1:nb_rep) {
+				val_y <- freq_mat[i, ]
+				if (fix_flag) {
+					pos <- which((val_y != 0) & (val_y != 1))
+					pos_0 <- which(val_y == 0)
+					pos_1 <- which(val_y == 1)
+					if (length(pos_0) > 1) {
+						pos_0 <- pos_0[1]
+						pos <- append(pos, pos_0)
+						lines(val_x[pos], val_y[pos], col = color_A_lost)
+						points(val_x[pos_0], val_y[pos_0], pch = 20, col = color_A_lost)
 					} else {
-						lines(val_x, val_y, col = "black")
+						if (length(pos_1) > 1) {
+							pos_1 <- pos_1[1]
+							pos <- append(pos, pos_1)
+							lines(val_x[pos], val_y[pos], col = color_A_fixed)
+							points(val_x[pos_1], val_y[pos_1], pch = 20, col = color_A_fixed)
+						} else {
+							lines(val_x, val_y, col = "black")
+						}
 					}
+				} else {
+					lines(val_x, val_y, col = color_rep[i])
 				}
-			} else {
-				lines(val_x, val_y, col = color_rep[i])
 			}
-		}
-		val_x <- 0
-		val_y <- sim_data$ini_p
-		points(val_x, val_y, pch = 15, col = "black", cex = 1)
+			val_x <- 0
+			val_y <- sim_data$ini_p
+			points(val_x, val_y, pch = 15, col = "black", cex = 1)
 
-		if (fix_flag) {
-			# A_lost_lab <- sprintf("Loss = %d", sum(pos_A_lost))
-			# polym_label <- sprintf("Polym = %d", sum(pos_polym))
-			# A_fixed_label <- sprintf("Fixed = %d", sum(pos_A_fixed))
-			# axis(4, at = c(0.0), label = A_lost_lab, las = 2, lwd = 0, col.axis = Color_LA, 
-				# cex.axis = 0.7)
-			# axis(4, at = c(0.5), label = polym_label, las = 2, lwd = 0, col.axis = "black", 
-				# cex.axis = 0.7)
-			# axis(4, at = c(1.0), label = A_fixed_label, las = 2, lwd = 0, col.axis = Color_FA, 
-				# cex.axis = 0.7)
-			A_lost_label <- sprintf("A lost\n%d", sum(pos_A_lost))
-			polym_label <- sprintf("Polym\n%d", sum(pos_polym))
-			A_fixed_label <- sprintf("A fixed\n%d", sum(pos_A_fixed))
-			axis(4, at = c(0.0), label = A_lost_label, las = 2, lwd = 0, col.axis = color_A_lost, 
-				cex.axis = 1)
-			axis(4, at = c(0.5), label = polym_label, las = 2, lwd = 0, col.axis = "black", 
-				cex.axis = 1)
-			axis(4, at = c(1.0), label = A_fixed_label, las = 2, lwd = 0, col.axis = color_A_fixed, 
-				cex.axis = 1)
-			if (sum(sim_data$time_A_fixed) > 0) {
-				rug(sim_data$time_A_fixed, side = 3, col = color_A_fixed)
-				rug(mean(sim_data$time_A_fixed), side = 3, col = "black", lwd = 2)
+			if (fix_flag) {
+				# A_lost_lab <- sprintf("Loss = %d", sum(pos_A_lost))
+				# polym_label <- sprintf("Polym = %d", sum(pos_polym))
+				# A_fixed_label <- sprintf("Fixed = %d", sum(pos_A_fixed))
+				# axis(4, at = c(0.0), label = A_lost_lab, las = 2, lwd = 0, col.axis = Color_LA, 
+					# cex.axis = 0.7)
+				# axis(4, at = c(0.5), label = polym_label, las = 2, lwd = 0, col.axis = "black", 
+					# cex.axis = 0.7)
+				# axis(4, at = c(1.0), label = A_fixed_label, las = 2, lwd = 0, col.axis = Color_FA, 
+					# cex.axis = 0.7)
+				A_lost_label <- sprintf("A lost\n%d", sum(pos_A_lost))
+				polym_label <- sprintf("Polym\n%d", sum(pos_polym))
+				A_fixed_label <- sprintf("A fixed\n%d", sum(pos_A_fixed))
+				axis(4, at = c(0.0), label = A_lost_label, las = 2, lwd = 0, col.axis = color_A_lost, 
+					cex.axis = 1)
+				axis(4, at = c(0.5), label = polym_label, las = 2, lwd = 0, col.axis = "black", 
+					cex.axis = 1)
+				axis(4, at = c(1.0), label = A_fixed_label, las = 2, lwd = 0, col.axis = color_A_fixed, 
+					cex.axis = 1)
+				if (sum(sim_data$time_A_fixed) > 0) {
+					rug(sim_data$time_A_fixed, side = 3, col = color_A_fixed)
+					rug(mean(sim_data$time_A_fixed), side = 3, col = "black", lwd = 2)
+				}
+				if (sum(sim_data$time_A_lost) > 0) {
+					rug(sim_data$time_A_lost, side = 1, col = color_A_lost)
+					rug(mean(sim_data$time_A_lost), side = 1, col = "black", lwd = 2)
+				}
 			}
-			if (sum(sim_data$time_A_lost) > 0) {
-				rug(sim_data$time_A_lost, side = 1, col = color_A_lost)
-				rug(mean(sim_data$time_A_lost), side = 1, col = "black", lwd = 2)
-			}
-		}
 
-		par(par_bak)
+			par(par_bak)
+		}
 #------------------------------------------------------------------------------
 	} else {
 		PlotError(sim_data$param$msg)
