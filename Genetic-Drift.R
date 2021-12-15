@@ -28,14 +28,35 @@ library("colorspace")
 #==============================================================================
 check_integer <- function(
 	x = 0,
+	label = "x", 
 	min_x = -Inf, 
 	max_x = +Inf, 
-	label = "x", 
+	min_inc = FALSE,
+	max_inc = FALSE,
 	rtn = list(check_flag = TRUE, check_msg = "")) 
 {
 	if (is.numeric(x)) {
 		if (x == round(x)) {
-			if ((x < min_x) || (x > max_x)) {
+			out_of_bounds_flag <- FALSE
+			if (min_inc) {
+				if (x <= min_x) {
+					out_of_bounds_flag <- TRUE
+				}
+			} else {
+				if (x < min_x) {
+					out_of_bounds_flag <- TRUE
+				}
+			}
+			if (max_inc) {
+				if (x >= max_x) {
+					out_of_bounds_flag <- TRUE
+				}
+			} else {
+				if (x > max_x) {
+					out_of_bounds_flag <- TRUE
+				}
+			}
+			if (out_of_bounds_flag) {
 				rtn$check_flag <- FALSE
 				rtn$check_msg <- sprintf("%s\nFAIL: [%s] out of bounds", rtn$check_msg, label)
 			}
@@ -57,13 +78,34 @@ check_integer <- function(
 #==============================================================================
 check_real <- function(
 	x = 0.0,
+	label = "x", 
 	min_x = -Inf, 
 	max_x = +Inf, 
-	label = "x", 
+	min_inc = FALSE,
+	max_inc = FALSE,
 	rtn = list(check_flag = TRUE, check_msg = "")) 
 {
 	if (is.numeric(x)) {
-		if ((x < min_x) || (x > max_x)) {
+		out_of_bounds_flag <- FALSE
+		if (min_inc) {
+			if (x <= min_x) {
+				out_of_bounds_flag <- TRUE
+			}
+		} else {
+			if (x < min_x) {
+				out_of_bounds_flag <- TRUE
+			}
+		}
+		if (max_inc) {
+			if (x >= max_x) {
+				out_of_bounds_flag <- TRUE
+			}
+		} else {
+			if (x > max_x) {
+				out_of_bounds_flag <- TRUE
+			}
+		}
+		if (out_of_bounds_flag) {
 			rtn$check_flag <- FALSE
 			rtn$check_msg <- sprintf("%s\nFAIL: [%s] out of bounds", rtn$check_msg, label)
 		}
@@ -77,7 +119,6 @@ check_real <- function(
 
 
 
-
 #==============================================================================
 # check_parameters
 #==============================================================================
@@ -85,10 +126,10 @@ check_parameters <- function(nb_ind = 10, ini_p = 0.5, nb_gen = 15, nb_rep = 10)
 {
 	check_list <- list(check_flag = TRUE, check_msg = "")
 #------------------------------------------------------------------------------
-	check_list <- check_integer(nb_ind, min_x = 1, label = "population size", rtn = check_list)
-	check_list <- check_integer(nb_gen, min_x = 1, label = "number of generations", rtn = check_list)
-	check_list <- check_real(ini_p, min_x = 0, max_x = 1, label = "initial frequency", rtn = check_list)
-	check_list <- check_integer(nb_rep, min_x = 1, label = "number of repetitions", rtn = check_list)
+	check_list <- check_integer(nb_ind, label = "population size", min_x = 1, rtn = check_list)
+	check_list <- check_integer(nb_gen, label = "number of generations", min_x = 1, rtn = check_list)
+	check_list <- check_real(ini_p, label = "initial frequency", min_x = 0, max_x = 1, rtn = check_list)
+	check_list <- check_integer(nb_rep, label = "number of repetitions", min_x = 1, rtn = check_list)
 #------------------------------------------------------------------------------
 	return(list(msg = check_list$check_msg, flag = check_list$check_flag, 
 		nb_ind = nb_ind, 

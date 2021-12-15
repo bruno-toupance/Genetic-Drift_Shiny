@@ -47,15 +47,21 @@ shinyServer(
 
 
 #------------------------------------------------------------------------------
-		observeEvent(input$mul2, {
-			updateNumericInput(session, "nb_ind", value = input$nb_ind * 2)
-			updateNumericInput(session, "nb_gen", value = input$nb_gen * 2)
-		})
+		observeEvent(
+			input$mul2, 
+			{
+				updateNumericInput(session, "nb_ind", value = input$nb_ind * 2)
+				updateNumericInput(session, "nb_gen", value = input$nb_gen * 2)
+			}
+		)
 #------------------------------------------------------------------------------
-		observeEvent(input$div2, {
-			updateNumericInput(session, "nb_ind", value = input$nb_ind %/% 2)
-			updateNumericInput(session, "nb_gen", value = input$nb_gen %/% 2)
-		})
+		observeEvent(
+			input$div2, 
+			{
+				updateNumericInput(session, "nb_ind", value = input$nb_ind %/% 2)
+				updateNumericInput(session, "nb_gen", value = input$nb_gen %/% 2)
+			}
+		)
 #------------------------------------------------------------------------------
 
 
@@ -68,9 +74,11 @@ shinyServer(
 					return(file_path)
 				},
 				content = function(file_path) {
-					write.table(get_count_df(drift_data()), 
+					write.table(
+						get_count_df(drift_data()), 
 						file = file_path, sep = "\t", 
-						quote = FALSE, row.names = FALSE)
+						quote = FALSE, row.names = FALSE
+					)
 				}
 		)
 #------------------------------------------------------------------------------
