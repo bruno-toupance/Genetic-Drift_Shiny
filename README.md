@@ -18,5 +18,5 @@ install.packages("shiny")
 ## Run from R
 ```{r }
 library(shiny)
-runGitHub(repo = "Genetic-Drift_Shiny", username = "bruno-toupance", ref = 'main")
+runGitHub(repo = "Genetic-Drift_Shiny", username = "bruno-toupance", ref = "main")
 ```
