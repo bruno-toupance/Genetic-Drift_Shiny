@@ -1,6 +1,6 @@
 #==============================================================================
-#    Genetic-Drift.R : Genetic Drift Simulator
-#    Copyright (C) 2023  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    Genetic-Drift.R: Genetic Drift Simulator
+#    Copyright (C) 2024  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by    
@@ -17,10 +17,10 @@
 #==============================================================================
 
 
-library("ggplot2")
-library("colorspace")
-# library("scales")
-# library("MASS")
+library(ggplot2)
+library(colorspace)
+# library(scales)
+# library(MASS)
 
 
 #==============================================================================
@@ -71,7 +71,7 @@ check_integer <- function(
         rtn$check_msg <- sprintf("%s\nFAIL: [%s] not numeric", 
                                  rtn$check_msg, label)
     }
-
+    
     return(rtn)
 }
 
@@ -118,7 +118,7 @@ check_real <- function(
         rtn$check_msg <- sprintf("%s\nFAIL: [%s] not numeric", 
                                  rtn$check_msg, label)
     }
-
+    
     return(rtn)
 }
 
@@ -134,7 +134,7 @@ check_parameters <- function(
         nb_rep = 10)
 {
     check_list <- list(check_flag = TRUE, check_msg = "")
-
+    
     check_list <- check_integer(nb_ind, label = "population size", 
                                 min_x = 1, rtn = check_list)
     
@@ -146,7 +146,7 @@ check_parameters <- function(
     
     check_list <- check_integer(nb_rep, label = "number of repetitions", 
                                 min_x = 1, rtn = check_list)
-
+    
     return(list(msg = check_list$check_msg, 
                 flag = check_list$check_flag, 
                 nb_ind = nb_ind, 
@@ -172,7 +172,7 @@ simulate_data <- function(
 {
     param_checking <- check_parameters(nb_ind, ini_p, nb_gen, nb_rep)
     # print(param_checking)
-
+    
     if (param_checking$flag) {
         if (diploid_flag) {
             nb_copies <- 2 * nb_ind
@@ -181,10 +181,10 @@ simulate_data <- function(
         }
         freq_mat <- matrix(NA, nrow = nb_rep, ncol = nb_gen + 1)
         freq_mat[, 1] <- ini_p
-
+        
         count_mat <- matrix(0, nrow = nb_copies + 1, ncol = nb_gen + 1)
         count_mat[round(ini_p * nb_copies) + 1, 1] <- nb_rep
-
+        
         mean_p <- rep(NA, times = nb_gen + 1)
         var_p <- rep(NA, times = nb_gen + 1)
         nb_A_fixed <- rep(NA, times = nb_gen + 1)
@@ -192,7 +192,7 @@ simulate_data <- function(
         nb_polym <- rep(NA, times = nb_gen + 1)
         time_A_fixed <- c()
         time_A_lost <- c()
-
+        
         j_max <- nb_gen + 1
         for (i_rep in 1:nb_rep) {
             i <- i_rep
@@ -225,7 +225,7 @@ simulate_data <- function(
         
         rownames(count_mat) <- 0:nb_copies
         colnames(count_mat) <- 0:nb_gen
-
+        
         nb_A_fixed <- apply(
             freq_mat, 
             MARGIN = 2, 
@@ -262,9 +262,10 @@ simulate_data <- function(
                     return(var(x)) 
                 })
         }
-
+        
         sim_data <- list(freq_mat = freq_mat, 
-                         count_mat = count_mat, 
+                         count_mat = count_mat,
+                         diploid_flag = diploid_flag,
                          nb_copies = nb_copies, 
                          ini_p = ini_p, 
                          nb_gen = nb_gen, 
@@ -280,7 +281,7 @@ simulate_data <- function(
     } else {
         sim_data <- list(param = param_checking)
     }
-
+    
     return(sim_data)
 }
 
@@ -327,35 +328,53 @@ plot_error <- function(msg)
 #==============================================================================
 # plot_freq
 #==============================================================================
-plot_freq <- function(sim_data, fix_flag = FALSE)
+plot_freq <- function(sim_data, fix_flag = FALSE, scale_flag = FALSE)
 {
     if (sim_data$param$flag) {
         freq_mat <- sim_data$freq_mat
         nb_gen <- sim_data$nb_gen
         nb_rep <- sim_data$nb_rep
-
+        
         if (nb_rep > 1000) {
             msg <- sprintf("\ntoo many replicates to display")
             plot_error(msg)
         } else {
             par_bak <- par(no.readonly = TRUE)
-
+            
             layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+            
+            val_x <- 0:nb_gen
+            
+            if (scale_flag) {
+                val_x <- val_x / sim_data$nb_copies
+                if (sim_data$diploid_flag) {
+                    label_x <- "Time (2N generations)"
+                } else {
+                    label_x <- "Time (N generations)"
+                }
+            } else {
+                label_x <- "Time (generations)"
+            }
+            
+            min_x <- 0
+            max_x <- max(val_x)
+            
             par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, 
                         top = 0.5 + 0, right = 0.5 + 5))
+            box_x <- c(min_x, max_x)
             box_y <- c(0, 1)
-            box_x <- c(0, nb_gen)
+            
+            
             plot(box_x, box_y, type = "n",
-                 xlim = c(0, nb_gen), 
+                 xlim = box_x, 
                  main = "", 
-                 xlab = "Time (generations)", 
-                 ylab = "Frequency P", 
+                 xlab = label_x, 
+                 ylab = "Frequency P",
                  bty = "n")
             
             abline(h = 0, col = "gray")
             abline(h = 1, col = "gray")
-        
+            
             # color_rep <- hue_pal()(nb_rep)  # 'scales' package
             # color_rep <- rainbow(nb_rep)
             color_rep <- rainbow_hcl(nb_rep)   # 'colorspace' package
@@ -363,7 +382,6 @@ plot_freq <- function(sim_data, fix_flag = FALSE)
             color_A_fixed <- color_2[1]
             color_A_lost <- color_2[2]
             
-            val_x <- 0:nb_gen
             pos_A_fixed <- freq_mat[, nb_gen + 1] == 1
             pos_A_lost <- freq_mat[, nb_gen + 1] == 0
             pos_polym <- !(pos_A_fixed | pos_A_lost) 
@@ -397,9 +415,9 @@ plot_freq <- function(sim_data, fix_flag = FALSE)
             val_x <- 0
             val_y <- sim_data$ini_p
             points(val_x, val_y, pch = 15, col = "black", cex = 1)
-
+            
             if (fix_flag) {
-
+                
                 A_lost_label <- sprintf("A lost\n%d", sum(pos_A_lost))
                 polym_label <- sprintf("Polym\n%d", sum(pos_polym))
                 A_fixed_label <- sprintf("A fixed\n%d", sum(pos_A_fixed))
@@ -412,7 +430,7 @@ plot_freq <- function(sim_data, fix_flag = FALSE)
                 axis(4, at = c(1.0), label = A_fixed_label, las = 2, 
                      lwd = 0, col.axis = color_A_fixed, 
                      cex.axis = 1)
-
+                
                 if (sum(sim_data$time_A_fixed) > 0) {
                     rug(sim_data$time_A_fixed, side = 3, col = color_A_fixed)
                     rug(mean(sim_data$time_A_fixed), side = 3, col = "black", 
@@ -424,7 +442,7 @@ plot_freq <- function(sim_data, fix_flag = FALSE)
                         lwd = 2)
                 }
             }
-
+            
             par(par_bak)
         }
     } else {
@@ -446,11 +464,11 @@ plot_freq_density <- function(sim_data, count_flag = FALSE)
         ini_p <- sim_data$ini_p
         nb_gen <- sim_data$nb_gen
         nb_rep <- sim_data$nb_rep
-
+        
         par_bak <- par(no.readonly = TRUE)
-
+        
         layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+        
         par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, 
                     top = 0.5 + 0, right = 0.5 + 5))
         box_y <- c(0 - 0.5, nb_copies + 0.5)
@@ -498,7 +516,7 @@ plot_freq_density <- function(sim_data, count_flag = FALSE)
         if (count_flag) {
             text(k, nb_A, val)
         }
-
+        
         par(par_bak)
     } else {
         plot_error(sim_data$param$msg)
@@ -517,17 +535,17 @@ plot_mean_P <- function(sim_data, expected_mean_flag = FALSE)
         ini_p <- sim_data$ini_p
         nb_gen <- sim_data$nb_gen
         mean_p <- sim_data$mean_p
-
+        
         par_bak <- par(no.readonly = TRUE)
-
+        
         layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+        
         par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, 
                     top = 0.5 + 0, right = 0.5 + 5))
-
+        
         box_y <- c(0, 1)
         box_x <- c(0, nb_gen)
-
+        
         plot(box_x, box_y, type = "n", 
              main = "", 
              xlab = "Time (generations)", 
@@ -535,19 +553,19 @@ plot_mean_P <- function(sim_data, expected_mean_flag = FALSE)
              bty = "n")
         
         abline(h = seq(from = 0, to = 1, by = 0.1), col = "gray", lty = 2)
-
+        
         if (expected_mean_flag) {
             axis(4, at = ini_p, label = expression(p[0]), las = 2, lwd = 0)
             abline(h = ini_p, lty = 2, lwd = 2, col = "red")
         }
-
+        
         abline(h = 0, col = "gray")
         abline(h = 1, col = "gray")
-
+        
         val_x <- 0:nb_gen
         val_y <- mean_p
         lines(val_x, val_y)
-
+        
         if (nb_gen < 50) {
             points(val_x, val_y, pch = 15, col = "gray", cex = 1)
         }
@@ -572,14 +590,14 @@ plot_variance_P <- function(sim_data, expected_var_flag = FALSE)
         nb_gen <- sim_data$nb_gen
         nb_rep <- sim_data$nb_rep
         var_p <- sim_data$var_p
-
+        
         par_bak <- par(no.readonly = TRUE)
-
+        
         layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+        
         par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, 
                     top = 0.5 + 0, right = 0.5 + 5))
-
+        
         max_y <- ini_p * (1 - ini_p)
         if (nb_rep > 1) {
             max_y <- max(c(var_p, max_y))
@@ -587,7 +605,7 @@ plot_variance_P <- function(sim_data, expected_var_flag = FALSE)
         max_y <- ceiling(max_y * 20) / 20
         box_y <- c(0, max_y)
         box_x <- c(0, nb_gen)
-
+        
         plot(box_x, box_y, type = "n", 
              main = "", 
              xlab = "Time (generations)", 
@@ -602,22 +620,22 @@ plot_variance_P <- function(sim_data, expected_var_flag = FALSE)
             val_y <- ini_p * (1 - ini_p) * (1 - (1 - 1 / nb_copies)^val_x)
             lines(val_x, val_y, lty = 2, lwd = 2, col = "red")
         }
-
+        
         abline(h = 0, col = "gray")
-
+        
         if (nb_rep > 1) {
             val_x <- 0:nb_gen
             val_y <- var_p
             lines(val_x, val_y)
-
+            
             if (nb_gen < 50) {
                 points(val_x, val_y, pch = 15, col = "gray", cex = 1)
             }
-        
+            
         } else {
             text(mean(box_x), mean(box_y), "NOT AVAILABLE", col = "red")
         }
-
+        
         par(par_bak)
     } else {
         plot_error(sim_data$param$msg)
@@ -638,22 +656,22 @@ plot_fixation_prob <- function(sim_data, expected_prob_flag = FALSE)
         nb_A_fixed <- sim_data$nb_A_fixed
         nb_A_lost <- sim_data$nb_A_lost
         nb_polym <- sim_data$nb_polym
-
+        
         par_bak <- par(no.readonly = TRUE)
-
+        
         color_2 <- rainbow_hcl(2)  # 'colorspace' package
         color_A_fixed <- color_2[1]
         color_A_lost <- color_2[2]
         color_polym <- "black"
-
+        
         layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+        
         par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, 
                     top = 0.5 + 0, right = 0.5 + 5))
-
+        
         box_y <- c(0, 1)
         box_x <- c(0, nb_gen)
-
+        
         plot(box_x, box_y, type = "n", 
              main = "", 
              xlab = "Time (generations)", 
@@ -675,10 +693,10 @@ plot_fixation_prob <- function(sim_data, expected_prob_flag = FALSE)
                      lwd = 0, cex.axis = 1)
             }
         }
-
+        
         abline(h = 0, col = "gray")
         abline(h = 1, col = "gray")
-
+        
         gen_max <- 50
         
         val_x <- 0:nb_gen
@@ -687,21 +705,21 @@ plot_fixation_prob <- function(sim_data, expected_prob_flag = FALSE)
         if (nb_gen < gen_max) {
             points(val_x, val_y, pch = 15, col = color_A_fixed, cex = 1)
         }
-
+        
         val_x <- 0:nb_gen
         val_y <- nb_A_lost / nb_rep
         lines(val_x, val_y, col = color_A_lost)
         if (nb_gen < gen_max) {
             points(val_x, val_y, pch = 15, col = color_A_lost, cex = 1)
         }
-
+        
         val_x <- 0:nb_gen
         val_y <- nb_polym / nb_rep
         lines(val_x, val_y, col = color_polym)
         if (nb_gen < gen_max) {
             points(val_x, val_y, pch = 15, col = color_polym, cex = 1)
         }
-
+        
         legend("topright", 
                legend = c("Polym", "A fixed", "A lost"), 
                col = c(color_polym, color_A_fixed, color_A_lost), 
@@ -727,26 +745,26 @@ plot_fixation_time <- function(sim_data, expected_time_flag = FALSE)
         nb_rep <- sim_data$nb_rep
         time_A_fixed <- sim_data$time_A_fixed
         time_A_lost <- sim_data$time_A_lost
-
+        
         mean_time_A_fixed <- mean(time_A_fixed)
         mean_time_A_lost <- mean(time_A_lost)
-
+        
         # color_2 <- hue_pal()(2)  # 'scales' package
         color_2 <- rainbow_hcl(2)  # 'colorspace' package
-
+        
         par_bak <- par(no.readonly = TRUE)
-
+        
         layout(matrix(c(1), nrow = 1, ncol = 1, byrow = TRUE))
-
+        
         par(mar = c(bottom = 0.5 + 4, left = 0.5 + 4, top = 0.5 + 0, 
                     right = 0.5 + 5))
-
+        
         expected_time_A_fixed <- -2 * nb_copies * (1 - ini_p) / ini_p * 
             log(1 - ini_p)
         expected_time_A_lost <- -2 * nb_copies * (ini_p) / (1 - ini_p) * 
             log(ini_p)
-
-
+        
+        
         A_label <- sprintf("A fixed\nObserved mean = %5.1f", mean_time_A_fixed)
         B_label <- sprintf("A lost\nObserved mean = %5.1f", mean_time_A_lost)
         if (expected_time_flag) {
@@ -755,7 +773,7 @@ plot_fixation_time <- function(sim_data, expected_time_flag = FALSE)
             B_label <- sprintf("%s\nExpected mean = %5.1f", B_label, 
                                expected_time_A_lost)
         }
-    
+        
         if (length(time_A_fixed) > 0 | length(time_A_lost) > 0) {
             plot_df <- data.frame(
                 Time = c(time_A_fixed, time_A_lost), 
@@ -791,7 +809,7 @@ plot_fixation_time <- function(sim_data, expected_time_flag = FALSE)
             err_msg <- "NO FIXATION"
             text(0.5, 0.5, err_msg, col = "red", adj = 0.5)
         }
-
+        
         par(par_bak)
     } else {
         plot_error(sim_data$param$msg)

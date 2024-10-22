@@ -1,6 +1,6 @@
 #==============================================================================
-#    server.R : Genetic Drift Simulator Server
-#    Copyright (C) 2023  Bruno Toupance <bruno.toupance@mnhn.fr>
+#    server.R: Genetic Drift Simulator Server
+#    Copyright (C) 2024  Bruno Toupance <bruno.toupance@mnhn.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #==============================================================================
 
 
-library("shiny")
+library(shiny)
 
 source("genetic_drift.R")
 
@@ -27,8 +27,8 @@ source("genetic_drift.R")
 #==============================================================================
 shinyServer(
     function(input, output, session) {
-
-#------------------------------------------------------------------------------
+        
+        #---
         drift_data <- reactive(
             {
                 tmp <- input$go
@@ -43,9 +43,23 @@ shinyServer(
                 )
             }
         )
-
-
-#------------------------------------------------------------------------------
+        
+        
+        #---
+        observeEvent(
+            input$diploid_flag, 
+            {
+                if (input$diploid_flag) {
+                    updateCheckboxInput(session, "scale_flag", 
+                                        label = "Time in 2N generations")
+                } else {
+                    updateCheckboxInput(session, "scale_flag", 
+                                        label = "Time N generations")
+                }
+            }
+        )
+        
+        #---
         observeEvent(
             input$mul2, 
             {
@@ -56,8 +70,8 @@ shinyServer(
                                    value = input$nb_gen * 2)
             }
         )
-
-#------------------------------------------------------------------------------
+        
+        #---
         observeEvent(
             input$div2, 
             {
@@ -68,43 +82,47 @@ shinyServer(
                                    value = input$nb_gen %/% 2)
             }
         )
-
-
-#------------------------------------------------------------------------------
+        
+        
+        #---
         output$export_count <- downloadHandler(
             
-                filename = function() {
-                    alpha_num <- c(0:9, LETTERS[1:6])
-                    rnd_num <- paste(sample(alpha_num, size = 8, 
-                                            replace = TRUE), 
-                                     collapse = "")
-                    file_path <- sprintf("drift_data_%s_%s.txt", Sys.Date(), 
-                                         rnd_num)
-                    return(file_path)
-                },
-                
-                content = function(file_path) {
-                    write.table(
-                        get_count_df(drift_data()), 
-                        file = file_path, sep = "\t", 
-                        quote = FALSE, row.names = FALSE
-                    )
-                }
+            filename = function() {
+                alpha_num <- c(0:9, LETTERS[1:6])
+                rnd_num <- paste(sample(alpha_num, size = 8, 
+                                        replace = TRUE), 
+                                 collapse = "")
+                file_path <- sprintf("drift_data_%s_%s.txt", Sys.Date(), 
+                                     rnd_num)
+                return(file_path)
+            },
+            
+            content = function(file_path) {
+                write.table(
+                    get_count_df(drift_data()), 
+                    file = file_path, sep = "\t", 
+                    quote = FALSE, row.names = FALSE
+                )
+            }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$count_table <- renderTable(
             {
                 get_count_df(drift_data())
             }, 
             digits = 0
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_freq <- renderPlot(
             {
-                my_plot <- plot_freq(drift_data(), fix_flag = input$fix_flag)
+                my_plot <- plot_freq(drift_data(), fix_flag = input$fix_flag, 
+                                     scale_flag = input$scale_flag)
             }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_freq_density <- renderPlot(
             {
                 my_plot <- plot_freq_density(
@@ -112,7 +130,8 @@ shinyServer(
                     count_flag = input$count_flag)
             }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_mean_P <- renderPlot(
             {
                 my_plot <- plot_mean_P(
@@ -120,7 +139,8 @@ shinyServer(
                     expected_mean_flag = input$expected_mean_flag)
             }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_variance_P <- renderPlot(
             {
                 my_plot <- plot_variance_P(
@@ -128,7 +148,8 @@ shinyServer(
                     expected_var_flag = input$expected_var_flag)
             }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_fixation_prob <- renderPlot(
             {
                 my_plot <- plot_fixation_prob(
@@ -136,7 +157,8 @@ shinyServer(
                     expected_prob_flag = input$expected_prob_flag)
             }
         )
-#------------------------------------------------------------------------------
+        
+        #---
         output$drift_plot_fixation_time <- renderPlot(
             {
                 my_plot <- plot_fixation_time(
@@ -144,8 +166,6 @@ shinyServer(
                     expected_time_flag = input$expected_time_flag)
             }
         )
-#------------------------------------------------------------------------------
-
+        
     }
 )
-#==============================================================================
