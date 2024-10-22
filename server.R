@@ -54,7 +54,7 @@ shinyServer(
                                         label = "Time in 2N generations")
                 } else {
                     updateCheckboxInput(session, "scale_flag", 
-                                        label = "Time N generations")
+                                        label = "Time in N generations")
                 }
             }
         )
