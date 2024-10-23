@@ -346,16 +346,18 @@ plot_freq <- function(sim_data, fix_flag = FALSE, scale_flag = FALSE)
             val_x <- 0:nb_gen
             
             if (scale_flag) {
-                val_x <- val_x / sim_data$nb_copies
+                time_coef <- sim_data$nb_copies
                 if (sim_data$diploid_flag) {
                     label_x <- "Time (2N generations)"
                 } else {
                     label_x <- "Time (N generations)"
                 }
             } else {
+                time_coef <- 1.0
                 label_x <- "Time (generations)"
             }
             
+            val_x <- val_x / time_coef
             min_x <- 0
             max_x <- max(val_x)
             
@@ -397,16 +399,14 @@ plot_freq <- function(sim_data, fix_flag = FALSE, scale_flag = FALSE)
                         lines(val_x[pos], val_y[pos], col = color_A_lost)
                         points(val_x[pos_0], val_y[pos_0], pch = 20, 
                                col = color_A_lost)
+                    } else if (length(pos_1) > 1) {
+                        pos_1 <- pos_1[1]
+                        pos <- append(pos, pos_1)
+                        lines(val_x[pos], val_y[pos], col = color_A_fixed)
+                        points(val_x[pos_1], val_y[pos_1], pch = 20, 
+                               col = color_A_fixed)
                     } else {
-                        if (length(pos_1) > 1) {
-                            pos_1 <- pos_1[1]
-                            pos <- append(pos, pos_1)
-                            lines(val_x[pos], val_y[pos], col = color_A_fixed)
-                            points(val_x[pos_1], val_y[pos_1], pch = 20, 
-                                   col = color_A_fixed)
-                        } else {
-                            lines(val_x, val_y, col = "black")
-                        }
+                        lines(val_x, val_y, col = "black")
                     }
                 } else {
                     lines(val_x, val_y, col = color_rep[i])
@@ -415,6 +415,7 @@ plot_freq <- function(sim_data, fix_flag = FALSE, scale_flag = FALSE)
             val_x <- 0
             val_y <- sim_data$ini_p
             points(val_x, val_y, pch = 15, col = "black", cex = 1)
+
             
             if (fix_flag) {
                 
@@ -431,14 +432,14 @@ plot_freq <- function(sim_data, fix_flag = FALSE, scale_flag = FALSE)
                      lwd = 0, col.axis = color_A_fixed, 
                      cex.axis = 1)
                 
-                if (sum(sim_data$time_A_fixed) > 0) {
-                    rug(sim_data$time_A_fixed, side = 3, col = color_A_fixed)
-                    rug(mean(sim_data$time_A_fixed), side = 3, col = "black", 
+                if (length(sim_data$time_A_fixed) > 0) {
+                    rug(sim_data$time_A_fixed / time_coef, side = 3, col = color_A_fixed)
+                    rug(mean(sim_data$time_A_fixed / time_coef), side = 3, col = "black", 
                         lwd = 2)
                 }
-                if (sum(sim_data$time_A_lost) > 0) {
-                    rug(sim_data$time_A_lost, side = 1, col = color_A_lost)
-                    rug(mean(sim_data$time_A_lost), side = 1, col = "black", 
+                if (length(sim_data$time_A_lost) > 0) {
+                    rug(sim_data$time_A_lost / time_coef, side = 1, col = color_A_lost)
+                    rug(mean(sim_data$time_A_lost / time_coef), side = 1, col = "black", 
                         lwd = 2)
                 }
             }
